@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_URL || null;
 
 const mockTeams = [
   {
@@ -98,6 +98,13 @@ const fallbackData = {
 };
 
 async function request(path, options = {}, fallback = null) {
+  // If no backend URL is configured, immediately use mock/local data.
+  if (!API_BASE) {
+    if (fallback !== null) return fallback;
+    return fallbackData[path] || null;
+  }
+
+  
   try {
     const response = await fetch(`${API_BASE}${path}`, {
       headers: {
