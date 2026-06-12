@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "./api";
 import Dashboard from "./components/Dashboard";
+import GroupAnalysis from "./components/GroupAnalysis";
 import LoginPage from "./components/LoginPage";
 import MyTasks from "./components/MyTasks";
 import NotificationList from "./components/NotificationList";
@@ -13,6 +14,9 @@ const demoUser = {
   username: "Andy",
   role: "Project Lead"
 };
+
+const taskPaneStorageKey = "taskify_tasks_collapsed";
+const mergeById = (item, update) => (item.id === update.id ? { ...item, ...update } : item);
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -30,6 +34,9 @@ export default function App() {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isTasksCollapsed, setIsTasksCollapsed] = useState(() => {
+    return localStorage.getItem(taskPaneStorageKey) === "true";
+  });
 
   const selectedTeam = useMemo(() => {
     return teams.find((team) => team.id === selectedTeamId) || teams[0];
@@ -71,6 +78,12 @@ export default function App() {
   }, [selectedTeamId, user]);
 
   useEffect(() => {
+    if (user) {
+      localStorage.setItem(taskPaneStorageKey, String(isTasksCollapsed));
+    }
+  }, [isTasksCollapsed, user]);
+
+  useEffect(() => {
     if (!user) return undefined;
 
     const intervalId = window.setInterval(() => {
@@ -110,6 +123,10 @@ export default function App() {
     setActivePage("workspace");
   };
 
+  const toggleTasksPanel = () => {
+    setIsTasksCollapsed((isCollapsed) => !isCollapsed);
+  };
+
   const handleCreateGroup = async (group) => {
     const createdGroup = await api.createTeam(group);
     setTeams((currentTeams) => [createdGroup, ...currentTeams]);
@@ -125,7 +142,17 @@ export default function App() {
 
   const handleCreateTask = async (task) => {
     const createdTask = await api.createTask(task);
-    setTasks((currentTasks) => [createdTask, ...currentTasks]);
+
+    setTasks((currentTasks) => {
+      const taskMap = new Map();
+
+      [createdTask, ...currentTasks].forEach((taskItem) => {
+        taskMap.set(taskItem.id, taskItem);
+      });
+
+      return Array.from(taskMap.values());
+    });
+
     const notificationData = await api.getNotifications();
     setNotifications(notificationData);
     return createdTask;
@@ -135,7 +162,7 @@ export default function App() {
     const updatedGroup = await api.updateTeam(teamId, group);
 
     setTeams((currentTeams) =>
-      currentTeams.map((team) => (team.id === updatedGroup.id ? updatedGroup : team))
+      currentTeams.map((team) => mergeById(team, updatedGroup))
     );
 
     api.getNotifications()
@@ -150,20 +177,21 @@ export default function App() {
   const handleUpdateTask = async (taskId, task) => {
     const updatedTask = await api.updateTask(taskId, task);
     setTasks((currentTasks) =>
-      currentTasks.map((currentTask) => (currentTask.id === updatedTask.id ? updatedTask : currentTask))
+      currentTasks.map((currentTask) => mergeById(currentTask, updatedTask))
     );
     const notificationData = await api.getNotifications();
     setNotifications(notificationData);
     return updatedTask;
   };
 
-  const handleUpdateTaskStatus = async (taskId, status) => {
-    const updatedTask = await api.updateTaskStatus(taskId, status);
+  const handleUpdateTaskStatus = async (taskId, statusUpdate) => {
+    const updatedTask = await api.updateTaskStatus(taskId, statusUpdate);
     setTasks((currentTasks) =>
-      currentTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+      currentTasks.map((task) => mergeById(task, updatedTask))
     );
     const notificationData = await api.getNotifications();
     setNotifications(notificationData);
+    return updatedTask;
   };
 
   const handleDeleteTask = async (taskId) => {
@@ -173,15 +201,29 @@ export default function App() {
     setNotifications(notificationData);
   };
 
+  const handleIgnoreTaskMention = async ({ message, taskIntent }) => {
+    if (!message?.sender || message.sender === user.username) return null;
+
+    const createdNotification = await api.createNotification({
+      text: `${user.username} ignored ${message.sender}'s task request: ${taskIntent.title}`,
+      type: "activity",
+      recipient: message.sender
+    });
+
+    setNotifications((currentNotifications) => [createdNotification, ...currentNotifications]);
+    return createdNotification;
+  };
+
   const handleSendMessage = async (message) => {
     const createdMessage = await api.createMessage(message);
     setMessages((currentMessages) => [...currentMessages, createdMessage]);
+    return createdMessage;
   };
 
   const handleEditMessage = async (messageId, content) => {
     const updatedMessage = await api.updateMessage(messageId, content, user.username);
     setMessages((currentMessages) =>
-      currentMessages.map((message) => (message.id === updatedMessage.id ? updatedMessage : message))
+      currentMessages.map((message) => mergeById(message, updatedMessage))
     );
     return updatedMessage;
   };
@@ -194,7 +236,7 @@ export default function App() {
   const handlePinMessage = async (messageId) => {
     const updatedMessage = await api.pinMessage(messageId, user.username);
     setMessages((currentMessages) =>
-      currentMessages.map((message) => (message.id === updatedMessage.id ? updatedMessage : message))
+      currentMessages.map((message) => mergeById(message, updatedMessage))
     );
     return updatedMessage;
   };
@@ -202,7 +244,7 @@ export default function App() {
   const handleUnpinMessage = async (messageId) => {
     const updatedMessage = await api.unpinMessage(messageId);
     setMessages((currentMessages) =>
-      currentMessages.map((message) => (message.id === updatedMessage.id ? updatedMessage : message))
+      currentMessages.map((message) => mergeById(message, updatedMessage))
     );
     return updatedMessage;
   };
@@ -230,8 +272,16 @@ export default function App() {
     onPinMessage: handlePinMessage,
     onUnpinMessage: handleUnpinMessage,
     onUpdateTaskStatus: handleUpdateTaskStatus,
-    onDeleteTask: handleDeleteTask
+    onDeleteTask: handleDeleteTask,
+    onIgnoreTaskMention: handleIgnoreTaskMention,
+    isTasksCollapsed,
+    onToggleTasksPanel: toggleTasksPanel
   };
+
+  const mainClassName =
+    activePage === "workspace" || activePage === "notifications" || activePage === "my-tasks"
+      ? "main-content workspace-main"
+      : "main-content";
 
   return (
     <div className="app-shell">
@@ -245,12 +295,13 @@ export default function App() {
         onOpenGroup={openTeamWorkspace}
         onNavigate={setActivePage}
       />
-      <main className={activePage === "workspace" ? "main-content workspace-main" : "main-content"}>
+      <main className={mainClassName}>
         {error && <div className="error-banner">{error}</div>}
         {isLoading && <div className="loading-banner">Loading Taskify workspace...</div>}
 
         {activePage === "dashboard" && <Dashboard {...pageProps} />}
         {activePage === "teams" && <TeamsPage {...pageProps} />}
+        {activePage === "analysis" && <GroupAnalysis {...pageProps} />}
         {activePage === "workspace" && <TeamWorkspace {...pageProps} />}
         {activePage === "my-tasks" && <MyTasks {...pageProps} />}
         {activePage === "notifications" && <NotificationList {...pageProps} view="page" />}

@@ -8,6 +8,7 @@ import {
   UsersRound
 } from "lucide-react";
 import NotificationList from "./NotificationList";
+import { formatDeadlineTime, parseDeadline } from "../deadlineUtils";
 
 const statusMeta = {
   "Total Tasks": { icon: ClipboardList, className: "summary-total" },
@@ -17,10 +18,12 @@ const statusMeta = {
 };
 
 function formatDate(dateValue) {
+  const date = parseDeadline(dateValue) || new Date(dateValue);
+
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric"
-  }).format(new Date(dateValue));
+  }).format(date);
 }
 
 export default function Dashboard({ teams, tasks, notifications, onOpenTeam }) {
@@ -92,7 +95,7 @@ export default function Dashboard({ teams, tasks, notifications, onOpenTeam }) {
                 </div>
                 <div>
                   <strong>{task.title}</strong>
-                  <span>{task.assignedTo} - {task.status}</span>
+                  <span>{task.assignedTo} - {formatDeadlineTime(task.deadline)} - {task.status}</span>
                 </div>
               </div>
             ))}

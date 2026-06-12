@@ -47,6 +47,7 @@ const weekdayIndexByName = {
 
 const duePrefix = String.raw`(?:by|on|at|before|due(?:\s+(?:by|on))?)`;
 const mentionPattern = /@([a-z0-9_-]+)/gi;
+const dueTimePattern = /\b(?:(?:at|by|before)\s+)?([01]?\d|2[0-3]):([0-5]\d)\s*(a\.?m\.?|p\.?m\.?)?\b/i;
 
 function toDateOnly(date) {
   const year = date.getFullYear();
@@ -54,6 +55,15 @@ function toDateOnly(date) {
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function toDeadlineWithTime(deadline, timeMatch) {
+  if (!timeMatch) return deadline;
+
+  const hour = String(timeMatch.hour).padStart(2, "0");
+  const minute = String(timeMatch.minute).padStart(2, "0");
+
+  return `${deadline}T${hour}:${minute}`;
 }
 
 function addDays(date, dayCount) {
@@ -140,12 +150,11 @@ function parseWeekdayDueDate(content, baseDate) {
 
   if (!weekdayMatch) return null;
 
-  const isExplicitNext = Boolean(weekdayMatch[1]);
   const targetWeekday = weekdayIndexByName[normalize(weekdayMatch[2])];
   const currentWeekday = baseDate.getDay();
   let dayOffset = (targetWeekday - currentWeekday + 7) % 7;
 
-  if (isExplicitNext && dayOffset === 0) {
+  if (dayOffset === 0) {
     dayOffset = 7;
   }
 
@@ -229,10 +238,43 @@ function parseNamedDueDate(content, baseDate) {
   return null;
 }
 
-function cleanTaskTitle(content, dateMatch) {
-  const beforeDue = content.slice(0, dateMatch.start);
-  const afterDue = content.slice(dateMatch.end);
-  const withoutDate = `${beforeDue} ${afterDue}`
+function parseDueTime(content) {
+  const timeMatch = content.match(dueTimePattern);
+
+  if (!timeMatch) return null;
+
+  const meridiem = normalize(timeMatch[3]).replaceAll(".", "");
+  let hour = Number(timeMatch[1]);
+  const minute = Number(timeMatch[2]);
+
+  if (meridiem === "pm" && hour < 12) {
+    hour += 12;
+  }
+
+  if (meridiem === "am" && hour === 12) {
+    hour = 0;
+  }
+
+  return {
+    hour,
+    minute,
+    timeText: timeMatch[0],
+    start: timeMatch.index,
+    end: timeMatch.index + timeMatch[0].length
+  };
+}
+
+function cleanTaskTitle(content, dateMatch, timeMatch = null) {
+  const removalRanges = [dateMatch, timeMatch]
+    .filter(Boolean)
+    .sort((firstRange, secondRange) => secondRange.start - firstRange.start);
+  let cleanedContent = content;
+
+  removalRanges.forEach((range) => {
+    cleanedContent = `${cleanedContent.slice(0, range.start)} ${cleanedContent.slice(range.end)}`;
+  });
+
+  const withoutDate = cleanedContent
     .replace(mentionPattern, " ")
     .replace(/\b(can\s+you|could\s+you|can\s+u|could\s+u|please|pls|kindly|to\s+do)\b/gi, " ")
     .replace(/\s+/g, " ")
@@ -257,21 +299,23 @@ export function parseTaskIntent(content, { members = [], fallbackAssignee = "And
 
   const { mentions, mentionsAll } = getTeamMentions(text, members);
   const assignedTo = mentions[0] || fallbackAssignee;
-  const title = cleanTaskTitle(text, dateMatch);
+  const timeMatch = parseDueTime(text);
+  const title = cleanTaskTitle(text, dateMatch, timeMatch);
 
   return {
     title,
     assignedTo,
-    deadline: dateMatch.deadline,
+    deadline: toDeadlineWithTime(dateMatch.deadline, timeMatch),
     status: "To Do",
     mentions,
     mentionsAll,
-    dateText: dateMatch.dateText
+    dateText: dateMatch.dateText,
+    timeText: timeMatch?.timeText || ""
   };
 }
 
 export function isTaskMentionForUser(message, taskIntent, username) {
-  if (!taskIntent || message.sender === username) return false;
+  if (!taskIntent || !username) return false;
 
-  return taskIntent.mentionsAll || taskIntent.mentions.includes(username);
+  return taskIntent.mentionsAll || taskIntent.mentions.some((mention) => normalize(mention) === normalize(username));
 }

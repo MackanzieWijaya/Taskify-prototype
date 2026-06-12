@@ -1,29 +1,94 @@
-import { useState } from "react";
-import { AlertTriangle, CalendarDays, Circle, Pencil, Save, Trash2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  AlertTriangle,
+  CalendarDays,
+  CheckCircle2,
+  Circle,
+  Clock3,
+  Pause,
+  Pencil,
+  Play,
+  Save,
+  Square,
+  Trash2,
+  X
+} from "lucide-react";
 import ProfileAvatar from "./ProfileAvatar";
+import { buildDeadlineValue, formatDeadline, splitDeadlineValue } from "../deadlineUtils";
 
-function formatDate(dateValue) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  }).format(new Date(dateValue));
+function getTaskElapsedMs(task, now = Date.now()) {
+  const baseElapsedMs = Number(task.elapsedMs) > 0 ? Number(task.elapsedMs) : 0;
+  const startedAt = task.timerStartedAt ? new Date(task.timerStartedAt).getTime() : null;
+  const runningMs =
+    task.status === "In Progress" && startedAt && !Number.isNaN(startedAt) ? Math.max(0, now - startedAt) : 0;
+
+  return baseElapsedMs + runningMs;
 }
 
-export default function TaskCard({ task, members = [], onUpdateTask, onUpdateTaskStatus, onDeleteTask }) {
+function formatElapsedDuration(milliseconds) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+
+  return `${seconds}s`;
+}
+
+export default function TaskCard({
+  task,
+  members = [],
+  onUpdateTask,
+  onUpdateTaskStatus,
+  onDeleteTask,
+  isNew = false,
+  variant = "card"
+}) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+  const [isStatusPopping, setIsStatusPopping] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
   const [deleteError, setDeleteError] = useState("");
   const [editError, setEditError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const popTimeoutRef = useRef(null);
+  const initialDeadlineFields = splitDeadlineValue(task.deadline);
   const [editForm, setEditForm] = useState({
     title: task.title,
     assignedTo: task.assignedTo,
-    deadline: task.deadline,
-    status: task.status
+    deadlineDate: initialDeadlineFields.deadlineDate,
+    deadlineTime: initialDeadlineFields.deadlineTime
   });
   const statusClass = task.status.toLowerCase().replaceAll(" ", "-");
+  const isCompleted = task.status === "Completed";
+  const isRunning = task.status === "In Progress" && Boolean(task.timerStartedAt);
+  const isPaused = task.status === "In Progress" && !task.timerStartedAt;
+  const elapsedMs = getTaskElapsedMs(task, now);
+  const shouldShowElapsed = elapsedMs > 0 || task.status === "In Progress";
+
+  useEffect(() => {
+    if (task.status !== "In Progress") return undefined;
+
+    const interval = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [task.status]);
+
+  useEffect(() => {
+    return () => window.clearTimeout(popTimeoutRef.current);
+  }, []);
 
   const handleDelete = async () => {
     try {
@@ -48,8 +113,7 @@ export default function TaskCard({ task, members = [], onUpdateTask, onUpdateTas
     setEditForm({
       title: task.title,
       assignedTo: task.assignedTo,
-      deadline: task.deadline,
-      status: task.status
+      ...splitDeadlineValue(task.deadline)
     });
     setIsEditDialogOpen(true);
   };
@@ -66,12 +130,20 @@ export default function TaskCard({ task, members = [], onUpdateTask, onUpdateTas
 
     if (!editForm.title.trim()) return;
 
+    const deadline = buildDeadlineValue(editForm.deadlineDate, editForm.deadlineTime);
+
+    if (!deadline) {
+      setEditError("Deadline date is required.");
+      return;
+    }
+
     try {
       setIsSaving(true);
       setEditError("");
       await onUpdateTask(task.id, {
         ...editForm,
-        title: editForm.title.trim()
+        title: editForm.title.trim(),
+        deadline
       });
       setIsEditDialogOpen(false);
     } catch (error) {
@@ -81,12 +153,57 @@ export default function TaskCard({ task, members = [], onUpdateTask, onUpdateTas
     }
   };
 
+  const showStatusPop = () => {
+    window.clearTimeout(popTimeoutRef.current);
+    setIsStatusPopping(true);
+    popTimeoutRef.current = window.setTimeout(() => {
+      setIsStatusPopping(false);
+    }, 420);
+  };
+
+  const updateStatus = async (statusUpdate) => {
+    if (isStatusUpdating) return;
+
+    try {
+      setIsStatusUpdating(true);
+      setActionError("");
+      showStatusPop();
+      await onUpdateTaskStatus(task.id, statusUpdate);
+    } catch (error) {
+      setActionError(error.message || "Could not update task status.");
+    } finally {
+      setIsStatusUpdating(false);
+    }
+  };
+
+  const toggleCompleted = () => {
+    updateStatus(isCompleted ? task.previousStatus || "To Do" : "Completed");
+  };
+
+  const cardClassName = [
+    "task-card",
+    isCompleted ? "completed-task" : "",
+    isStatusPopping ? "status-pop" : "",
+    variant === "list" ? "list-task-card" : "",
+    isNew ? "new-task-pop" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <>
-      <article className="task-card">
+      <article className={cardClassName}>
         <div className="task-card-top">
           <div className="task-title-row">
-            <Circle size={22} />
+            <button
+              type="button"
+              className={isCompleted ? "task-complete-button completed" : "task-complete-button"}
+              onClick={toggleCompleted}
+              disabled={isStatusUpdating}
+              title={isCompleted ? "Undo completed task" : "Complete task"}
+            >
+              {isCompleted ? <CheckCircle2 size={22} /> : <Circle size={22} />}
+            </button>
             <h3>{task.title}</h3>
           </div>
           <span className={`status-pill ${statusClass}`}>{task.status}</span>
@@ -99,22 +216,58 @@ export default function TaskCard({ task, members = [], onUpdateTask, onUpdateTas
           </span>
           <span className="task-meta-item">
             <CalendarDays size={15} />
-            {formatDate(task.deadline)}
+            {formatDeadline(task.deadline)}
           </span>
+          {shouldShowElapsed && (
+            <span className="task-meta-item task-timer-meta">
+              <Clock3 size={15} />
+              {isRunning ? "Working" : isPaused ? "Paused" : "Tracked"} {formatElapsedDuration(elapsedMs)}
+            </span>
+          )}
         </div>
 
         <div className="task-card-actions">
-          <label className="status-control">
-            <select
-              value={task.status}
-              onChange={(event) => onUpdateTaskStatus(task.id, event.target.value)}
-              aria-label={`Update ${task.title} status`}
-            >
-              <option>To Do</option>
-              <option>In Progress</option>
-              <option>Completed</option>
-            </select>
-          </label>
+          <div className="task-flow-actions">
+            {task.status === "To Do" && (
+              <button
+                type="button"
+                className="task-action-button start"
+                onClick={() => updateStatus("In Progress")}
+                disabled={isStatusUpdating}
+              >
+                <Play size={15} />
+                Start Task
+              </button>
+            )}
+
+            {task.status === "In Progress" && (
+              <>
+                <button
+                  type="button"
+                  className={isRunning ? "task-action-button pause" : "task-action-button start"}
+                  onClick={() =>
+                    updateStatus({
+                      status: "In Progress",
+                      timerAction: isRunning ? "pause" : "resume"
+                    })
+                  }
+                  disabled={isStatusUpdating}
+                >
+                  {isRunning ? <Pause size={15} /> : <Play size={15} />}
+                  {isRunning ? "Pause" : "Resume"}
+                </button>
+                <button
+                  type="button"
+                  className="task-action-button stop"
+                  onClick={() => updateStatus("To Do")}
+                  disabled={isStatusUpdating}
+                >
+                  <Square size={14} />
+                  Stop
+                </button>
+              </>
+            )}
+          </div>
 
           <button type="button" className="delete-task-button" onClick={openDeleteDialog} title="Delete task">
             <Trash2 size={15} />
@@ -124,6 +277,8 @@ export default function TaskCard({ task, members = [], onUpdateTask, onUpdateTas
             <Pencil size={16} />
           </button>
         </div>
+
+        {actionError && <p className="form-error compact-error">{actionError}</p>}
       </article>
 
       {isEditDialogOpen && (
@@ -174,22 +329,22 @@ export default function TaskCard({ task, members = [], onUpdateTask, onUpdateTas
                 </label>
 
                 <label>
-                  Deadline
+                  Deadline date
                   <input
                     type="date"
-                    value={editForm.deadline}
-                    onChange={(event) => updateEditField("deadline", event.target.value)}
+                    value={editForm.deadlineDate}
+                    onChange={(event) => updateEditField("deadlineDate", event.target.value)}
                   />
                 </label>
               </div>
 
               <label>
-                Status
-                <select value={editForm.status} onChange={(event) => updateEditField("status", event.target.value)}>
-                  <option>To Do</option>
-                  <option>In Progress</option>
-                  <option>Completed</option>
-                </select>
+                Time
+                <input
+                  type="time"
+                  value={editForm.deadlineTime}
+                  onChange={(event) => updateEditField("deadlineTime", event.target.value)}
+                />
               </label>
 
               {editError && <p className="form-error">{editError}</p>}

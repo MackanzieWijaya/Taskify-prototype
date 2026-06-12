@@ -4,8 +4,6 @@ import {
   Edit3,
   MoreVertical,
   Paperclip,
-  PanelRightClose,
-  PanelRightOpen,
   Pencil,
   Phone,
   Pin,
@@ -22,13 +20,25 @@ import {
 } from "lucide-react";
 import EditGroupDialog from "./EditGroupDialog";
 import ProfileAvatar from "./ProfileAvatar";
+import TaskPaneToggle from "./TaskPaneToggle";
+import { formatDeadline } from "../deadlineUtils";
 import { parseTaskIntent } from "../taskParser";
 
 function formatMessageTime(dateValue) {
+  if (!dateValue) {
+    return "Just now";
+  }
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Just now";
+  }
+
   return new Intl.DateTimeFormat("en", {
     hour: "2-digit",
     minute: "2-digit"
-  }).format(new Date(dateValue));
+  }).format(date);
 }
 
 function truncateText(value, length = 82) {
@@ -562,15 +572,11 @@ export default function ChatPanel({
               </div>
             )}
           </div>
-          <button
-            type="button"
+          <TaskPaneToggle
             className="chat-header-icon-button task-pane-chat-toggle"
-            onClick={onToggleTasksPanel}
-            title={isTasksCollapsed ? "Show tasks" : "Collapse tasks"}
-            aria-label={isTasksCollapsed ? "Show tasks panel" : "Collapse tasks panel"}
-          >
-            {isTasksCollapsed ? <PanelRightOpen size={19} /> : <PanelRightClose size={19} />}
-          </button>
+            isCollapsed={isTasksCollapsed}
+            onToggle={onToggleTasksPanel}
+          />
         </div>
       </div>
 
@@ -694,7 +700,7 @@ export default function ChatPanel({
                     title={
                       isTaskAdded
                         ? "This message is already a task"
-                        : `Add task due ${taskIntent.deadline}`
+                        : `Add task due ${formatDeadline(taskIntent.deadline)}`
                     }
                     disabled={isTaskAdded}
                   >

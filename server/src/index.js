@@ -147,16 +147,98 @@ const createId = (collection) => {
   return Math.max(...collection.map((item) => item.id)) + 1;
 };
 
-const createNotification = (text, type = "activity") => {
+const createNotification = (text, type = "activity", recipient = null) => {
   const notification = {
     id: createId(notifications),
     text,
     type,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    recipient
   };
 
   notifications = [notification, ...notifications];
   return notification;
+};
+
+const completedTaskRetentionMs = 7 * 24 * 60 * 60 * 1000;
+
+const coerceElapsedMs = (value) => {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) && numericValue > 0 ? Math.round(numericValue) : 0;
+};
+
+const normalizeTaskRecord = (task) => ({
+  completedAt: null,
+  timerStartedAt: null,
+  elapsedMs: 0,
+  previousStatus: null,
+  ...task,
+  elapsedMs: coerceElapsedMs(task.elapsedMs)
+});
+
+tasks = tasks.map(normalizeTaskRecord);
+
+const getTaskElapsedMs = (task, now = new Date()) => {
+  const startedAt = task.timerStartedAt ? new Date(task.timerStartedAt) : null;
+  const runningMs =
+    startedAt && !Number.isNaN(startedAt.getTime()) ? Math.max(0, now.getTime() - startedAt.getTime()) : 0;
+
+  return coerceElapsedMs(task.elapsedMs) + runningMs;
+};
+
+const pruneExpiredCompletedTasks = () => {
+  const cutoffTime = Date.now() - completedTaskRetentionMs;
+  tasks = tasks.filter((task) => {
+    if (task.status !== "Completed" || !task.completedAt) return true;
+
+    const completedTime = new Date(task.completedAt).getTime();
+    return Number.isNaN(completedTime) || completedTime > cutoffTime;
+  });
+};
+
+const applyTaskStatus = (task, status, options = {}) => {
+  if (!validStatuses.includes(status)) {
+    return false;
+  }
+
+  const now = new Date();
+  const previousStatus = task.status;
+  const timerAction = options.timerAction;
+
+  if (previousStatus === "In Progress" && status !== "In Progress") {
+    task.elapsedMs = getTaskElapsedMs(task, now);
+    task.timerStartedAt = null;
+  }
+
+  if (status === "In Progress") {
+    if (previousStatus !== "In Progress" || timerAction === "resume") {
+      task.timerStartedAt = now.toISOString();
+    }
+
+    if (previousStatus === "In Progress" && timerAction === "pause") {
+      task.elapsedMs = getTaskElapsedMs(task, now);
+      task.timerStartedAt = null;
+    }
+
+    task.completedAt = null;
+    task.previousStatus = null;
+  }
+
+  if (status === "Completed") {
+    task.completedAt = now.toISOString();
+    task.timerStartedAt = null;
+    task.previousStatus = previousStatus === "Completed" ? task.previousStatus || "To Do" : previousStatus;
+  }
+
+  if (status === "To Do") {
+    task.completedAt = null;
+    task.timerStartedAt = null;
+    task.previousStatus = null;
+  }
+
+  task.status = status;
+  task.elapsedMs = coerceElapsedMs(task.elapsedMs);
+  return true;
 };
 
 const findMessage = (messageId) => messages.find((message) => message.id === messageId);
@@ -281,6 +363,7 @@ app.patch("/api/teams/:id", (req, res) => {
 });
 
 app.get("/api/tasks", (req, res) => {
+  pruneExpiredCompletedTasks();
   const { teamId } = req.query;
   const filteredTasks = teamId
     ? tasks.filter((task) => task.teamId === Number(teamId))
@@ -302,15 +385,17 @@ app.post("/api/tasks", (req, res) => {
     return res.status(400).json({ message: "Invalid task status." });
   }
 
-  const task = {
+  const task = normalizeTaskRecord({
     id: createId(tasks),
     teamId: Number(teamId),
     title,
     assignedTo,
     deadline,
-    status,
+    status: "To Do",
     sourceMessageId: sourceMessageId === null || sourceMessageId === undefined ? null : Number(sourceMessageId)
-  };
+  });
+
+  applyTaskStatus(task, status, req.body || {});
 
   tasks = [task, ...tasks];
   createNotification(`${title} was added for ${assignedTo}`, "task");
@@ -336,14 +421,17 @@ app.patch("/api/tasks/:id", (req, res) => {
     });
   }
 
-  if (!validStatuses.includes(status)) {
+  if (status !== undefined && !validStatuses.includes(status)) {
     return res.status(400).json({ message: "Invalid task status." });
   }
 
   task.title = nextTitle;
   task.assignedTo = nextAssignedTo;
   task.deadline = nextDeadline;
-  task.status = status;
+
+  if (status !== undefined && status !== task.status) {
+    applyTaskStatus(task, status, req.body || {});
+  }
 
   createNotification(`${task.title} was updated`, "activity");
   res.json(task);
@@ -363,7 +451,7 @@ app.patch("/api/tasks/:id/status", (req, res) => {
     return res.status(404).json({ message: "Task not found." });
   }
 
-  task.status = status;
+  applyTaskStatus(task, status, req.body || {});
   createNotification(`${task.title} was marked as ${status}`, "status");
   res.json(task);
 });
@@ -509,6 +597,18 @@ app.delete("/api/messages/:id/pin", (req, res) => {
 
 app.get("/api/notifications", (req, res) => {
   res.json(notifications);
+});
+
+app.post("/api/notifications", (req, res) => {
+  const { text, type = "activity", recipient = null } = req.body || {};
+  const notificationText = String(text || "").trim();
+  const notificationRecipient = recipient ? String(recipient).trim() : null;
+
+  if (!notificationText) {
+    return res.status(400).json({ message: "Notification text is required." });
+  }
+
+  res.status(201).json(createNotification(notificationText, type, notificationRecipient));
 });
 
 app.use((req, res) => {

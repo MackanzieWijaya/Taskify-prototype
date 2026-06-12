@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
+  Activity,
   Bell,
   CheckSquare,
   ChevronDown,
   LayoutDashboard,
   LogOut,
-  MessageCircle,
   Plus,
   UsersRound
 } from "lucide-react";
@@ -13,7 +13,7 @@ import ProfileAvatar from "./ProfileAvatar";
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "workspace", label: "Chat", icon: MessageCircle },
+  { id: "analysis", label: "Group Analysis", icon: Activity },
   { id: "my-tasks", label: "Tasks", icon: CheckSquare },
   { id: "notifications", label: "Notifications", icon: Bell }
 ];

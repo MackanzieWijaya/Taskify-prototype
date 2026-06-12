@@ -3,21 +3,34 @@ node_modules/
 client/node_modules/
 server/node_modules/
 
-# Build output
+# Build output and caches
 dist/
 client/dist/
+server/dist/
+.vite/
+client/.vite/
+coverage/
 
 # Environment files
 .env
-.env.local
-server/.env
+.env.*
 client/.env
+client/.env.*
+server/.env
+server/.env.*
+!.env.example
+!client/.env.example
+!server/.env.example
 
-# Logs
+# Logs and runtime noise
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # System/editor files
 .DS_Store
+Thumbs.db
+.idea/
 .vscode/

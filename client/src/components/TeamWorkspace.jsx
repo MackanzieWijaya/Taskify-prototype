@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ChatPanel from "./ChatPanel";
 import TaskPanel from "./TaskPanel";
 import { parseTaskIntent } from "../taskParser";
@@ -18,14 +18,30 @@ export default function TeamWorkspace({
   onUnpinMessage,
   onUpdateTaskStatus,
   onDeleteTask,
-  onUpdateGroup
+  onUpdateGroup,
+  isTasksCollapsed = false,
+  onToggleTasksPanel = () => {}
 }) {
-  const [isTasksCollapsed, setIsTasksCollapsed] = useState(false);
+  const [highlightedTaskId, setHighlightedTaskId] = useState(null);
   const teamTasks = tasks.filter((task) => task.teamId === selectedTeamId);
   const teamMessages = messages.filter((message) => message.teamId === selectedTeamId);
   const taskSourceMessageIds = new Set(
     teamTasks.map((task) => task.sourceMessageId).filter((sourceMessageId) => sourceMessageId !== null && sourceMessageId !== undefined)
   );
+
+  useEffect(() => {
+    setHighlightedTaskId(null);
+  }, [selectedTeamId]);
+
+  const createTaskWithHighlight = async (task) => {
+    const createdTask = await onCreateTask(task);
+
+    if (createdTask?.id) {
+      setHighlightedTaskId(createdTask.id);
+    }
+
+    return createdTask;
+  };
 
   const handleConvertToTask = async (message, parsedTask) => {
     const taskIntent =
@@ -38,7 +54,7 @@ export default function TeamWorkspace({
 
     if (!taskIntent) return null;
 
-    return onCreateTask({
+    return createTaskWithHighlight({
       teamId: selectedTeamId,
       title: taskIntent.title,
       assignedTo: taskIntent.assignedTo,
@@ -69,7 +85,7 @@ export default function TeamWorkspace({
           onConvertToTask={handleConvertToTask}
           taskSourceMessageIds={taskSourceMessageIds}
           isTasksCollapsed={isTasksCollapsed}
-          onToggleTasksPanel={() => setIsTasksCollapsed((isCollapsed) => !isCollapsed)}
+          onToggleTasksPanel={onToggleTasksPanel}
           onUpdateGroup={onUpdateGroup}
         />
 
@@ -78,11 +94,12 @@ export default function TeamWorkspace({
             team={selectedTeam}
             tasks={teamTasks}
             user={user}
-            onCreateTask={onCreateTask}
+            onCreateTask={createTaskWithHighlight}
             onUpdateTask={onUpdateTask}
             onUpdateTaskStatus={onUpdateTaskStatus}
             onDeleteTask={onDeleteTask}
             isCollapsed={isTasksCollapsed}
+            highlightedTaskId={highlightedTaskId}
           />
         </div>
       </section>
