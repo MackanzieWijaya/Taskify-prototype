@@ -8,6 +8,7 @@ export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState("Andy");
   const [password, setPassword] = useState("password123");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [greetingNameIndex, setGreetingNameIndex] = useState(0);
   const greetingName = prototypeNames[greetingNameIndex];
 
@@ -19,12 +20,28 @@ export default function LoginPage({ onLogin }) {
     return () => window.clearInterval(intervalId);
   }, []);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const isValid = onLogin({ username, password });
+  const updateUsername = (value) => {
+    setUsername(value);
+    setError("");
+  };
 
-    if (!isValid) {
-      setError("Use the demo account: Andy / password123");
+  const updatePassword = (value) => {
+    setPassword(value);
+    setError("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setIsSubmitting(true);
+      const isValid = await onLogin({ username, password });
+
+      if (!isValid) {
+        setError("Try Andy / password123, or any other demo name with password demo.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -54,8 +71,9 @@ export default function LoginPage({ onLogin }) {
               <UserRound size={18} />
               <input
                 value={username}
-                onChange={(event) => setUsername(event.target.value)}
+                onChange={(event) => updateUsername(event.target.value)}
                 placeholder="Andy"
+                disabled={isSubmitting}
               />
             </span>
           </label>
@@ -67,16 +85,17 @@ export default function LoginPage({ onLogin }) {
               <input
                 type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => updatePassword(event.target.value)}
                 placeholder="password123"
+                disabled={isSubmitting}
               />
             </span>
           </label>
 
           {error && <p className="form-error">{error}</p>}
 
-          <button type="submit" className="primary-button">
-            Get Started
+          <button type="submit" className="primary-button" disabled={isSubmitting}>
+            {isSubmitting ? "Signing in..." : "Get Started"}
           </button>
         </form>
       </section>

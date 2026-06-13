@@ -8,12 +8,16 @@ app.use(cors());
 app.use(express.json({ limit: "3mb" }));
 
 const validStatuses = ["To Do", "In Progress", "Completed"];
+const clone = (value) => JSON.parse(JSON.stringify(value));
 
 const users = [
   { id: 1, username: "Andy", password: "password123", role: "Project Lead" },
   { id: 2, username: "Maya", password: "demo", role: "UI Designer" },
   { id: 3, username: "Rafi", password: "demo", role: "Backend Developer" },
-  { id: 4, username: "Sinta", password: "demo", role: "Presenter" }
+  { id: 4, username: "Sinta", password: "demo", role: "Presenter" },
+  { id: 5, username: "Dina", password: "demo", role: "Researcher" },
+  { id: 6, username: "Bima", password: "demo", role: "Coordinator" },
+  { id: 7, username: "Laras", password: "demo", role: "Communications Lead" }
 ];
 
 let teams = [
@@ -142,6 +146,11 @@ let notifications = [
   }
 ];
 
+const seedTeams = clone(teams);
+const seedTasks = clone(tasks);
+const seedMessages = clone(messages);
+const seedNotifications = clone(notifications);
+
 const createId = (collection) => {
   if (collection.length === 0) return 1;
   return Math.max(...collection.map((item) => item.id)) + 1;
@@ -177,6 +186,13 @@ const normalizeTaskRecord = (task) => ({
 });
 
 tasks = tasks.map(normalizeTaskRecord);
+
+const resetDemoState = () => {
+  teams = clone(seedTeams);
+  tasks = clone(seedTasks).map(normalizeTaskRecord);
+  messages = clone(seedMessages);
+  notifications = clone(seedNotifications);
+};
 
 const getTaskElapsedMs = (task, now = new Date()) => {
   const startedAt = task.timerStartedAt ? new Date(task.timerStartedAt) : null;
@@ -245,6 +261,16 @@ const findMessage = (messageId) => messages.find((message) => message.id === mes
 
 const findTeam = (teamId) => teams.find((team) => team.id === Number(teamId));
 
+const serializeUser = ({ password, ...user }) => user;
+
+const findUserByCredentials = (username, password) => {
+  const usernameKey = String(username || "").trim().toLowerCase();
+
+  return users.find(
+    (user) => user.username.toLowerCase() === usernameKey && user.password === password
+  );
+};
+
 const normalizeAvatarUrl = (avatarUrl) => {
   const value = String(avatarUrl || "").trim();
 
@@ -304,8 +330,23 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", app: "Taskify API" });
 });
 
+app.post("/api/login", (req, res) => {
+  const user = findUserByCredentials(req.body.username, req.body.password);
+
+  if (!user) {
+    return res.status(401).json({ message: "Invalid username or password." });
+  }
+
+  return res.json(serializeUser(user));
+});
+
+app.post("/api/reset", (req, res) => {
+  resetDemoState();
+  res.json({ status: "reset" });
+});
+
 app.get("/api/users", (req, res) => {
-  res.json(users.map(({ password, ...user }) => user));
+  res.json(users.map(serializeUser));
 });
 
 app.get("/api/teams", (req, res) => {

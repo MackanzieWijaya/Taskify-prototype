@@ -11,14 +11,11 @@ import TeamWorkspace from "./components/TeamWorkspace";
 import CreateGroupDialog from "./components/CreateGroupDialog";
 import SettingsDialog from "./components/SettingsDialog";
 
-const demoUser = {
-  username: "Andy",
-  role: "Project Lead"
-};
-
 const taskPaneStorageKey = "taskify_tasks_collapsed";
 const sidebarStorageKey = "taskify_sidebar_compact";
 const appearanceStorageKey = "taskify_appearance";
+const taskWorkspaceStorageKey = "taskify:lastTaskWorkspace";
+const taskStickyStorageKey = "taskify:stickyTaskStatusById";
 const defaultAppearance = {
   mode: "light",
   theme: "taskify"
@@ -37,6 +34,22 @@ function readStoredAppearance() {
     };
   } catch {
     return defaultAppearance;
+  }
+}
+
+function removeLocalStorageItem(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Ignore blocked storage in prototype/demo environments.
+  }
+}
+
+function removeSessionStorageItem(key) {
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch {
+    // Ignore blocked storage in prototype/demo environments.
   }
 }
 
@@ -149,21 +162,49 @@ export default function App() {
     return () => window.clearInterval(intervalId);
   }, [user]);
 
-  const handleLogin = ({ username, password }) => {
-    if (username.trim() === "Andy" && password === "password123") {
+  const handleLogin = async ({ username, password }) => {
+    try {
+      const demoUser = await api.login({ username, password });
+
       setUser(demoUser);
       localStorage.setItem("taskify_user", JSON.stringify(demoUser));
+      setSelectedTeamId(1);
       setActivePage("dashboard");
       return true;
+    } catch (err) {
+      console.warn("Demo login failed.", err);
+      return false;
     }
-
-    return false;
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("taskify_user");
+  const handleLogout = async () => {
+    try {
+      await api.resetDemoData();
+    } catch (err) {
+      console.warn("Demo reset failed during logout.", err);
+    }
+
+    removeLocalStorageItem("taskify_user");
+    removeLocalStorageItem("taskify_team");
+    removeLocalStorageItem(taskPaneStorageKey);
+    removeLocalStorageItem(sidebarStorageKey);
+    removeLocalStorageItem(taskWorkspaceStorageKey);
+    removeLocalStorageItem(appearanceStorageKey);
+    removeSessionStorageItem(taskStickyStorageKey);
+
     setUser(null);
+    setTeams([]);
+    setTasks([]);
+    setMessages([]);
+    setNotifications([]);
+    setSelectedTeamId(1);
     setActivePage("dashboard");
+    setIsTasksCollapsed(false);
+    setIsSidebarCompact(false);
+    setIsCreateGroupOpen(false);
+    setIsSettingsOpen(false);
+    setAppearance(defaultAppearance);
+    setError("");
   };
 
   const openTeamWorkspace = (teamId) => {

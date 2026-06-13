@@ -61,11 +61,16 @@ VITE_API_URL=https://your-api-url.example/api
 ## Demo Login
 
 ```text
-username: Andy
-password: password123
+Andy  / password123
+Maya  / demo
+Rafi  / demo
+Sinta / demo
+Dina  / demo
+Bima  / demo
+Laras / demo
 ```
 
-Other seeded demo users include `Maya`, `Rafi`, and `Sinta` with password `demo`. This is prototype-only authentication; logging in stores the selected demo user in `localStorage`.
+This is prototype-only authentication; logging in stores the selected demo user in `localStorage`. Logging out resets the seeded demo data for the current prototype session.
 
 ## Useful Scripts
 
@@ -85,6 +90,8 @@ npm run preview  # preview the production build
 ## API Routes
 
 - `GET /api/health`
+- `POST /api/login`
+- `POST /api/reset`
 - `GET /api/users`
 - `GET /api/teams`
 - `POST /api/teams`

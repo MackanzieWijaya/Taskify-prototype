@@ -17,6 +17,16 @@ const localDemoStorageKey = "taskify_demo_data_v1";
 
 const validStatuses = ["To Do", "In Progress", "Completed"];
 
+const mockUsers = [
+  { id: 1, username: "Andy", password: "password123", role: "Project Lead" },
+  { id: 2, username: "Maya", password: "demo", role: "UI Designer" },
+  { id: 3, username: "Rafi", password: "demo", role: "Backend Developer" },
+  { id: 4, username: "Sinta", password: "demo", role: "Presenter" },
+  { id: 5, username: "Dina", password: "demo", role: "Researcher" },
+  { id: 6, username: "Bima", password: "demo", role: "Coordinator" },
+  { id: 7, username: "Laras", password: "demo", role: "Communications Lead" }
+];
+
 const mockTeams = [
   {
     id: 1,
@@ -198,6 +208,18 @@ function createLocalSeedData() {
   };
 }
 
+function resetLocalDemoData() {
+  const seedData = createLocalSeedData();
+
+  localTeams = seedData.teams;
+  localTasks = seedData.tasks;
+  localMessages = seedData.messages;
+  localNotifications = seedData.notifications;
+  saveLocalDemoData();
+
+  return seedData;
+}
+
 function readLocalDemoData() {
   if (!useBrowserDemoData || !canUseSessionStorage()) return null;
 
@@ -253,6 +275,19 @@ function saveLocalDemoData() {
 function createLocalId(collection) {
   if (collection.length === 0) return 1;
   return Math.max(...collection.map((item) => item.id)) + 1;
+}
+
+function serializeLocalUser(user) {
+  const { password, ...safeUser } = user;
+  return clone(safeUser);
+}
+
+function findLocalUser(username, password) {
+  const usernameKey = String(username || "").trim().toLowerCase();
+
+  return mockUsers.find(
+    (user) => user.username.toLowerCase() === usernameKey && user.password === password
+  );
 }
 
 function parseRequestBody(options) {
@@ -443,6 +478,25 @@ function localRequest(path, options = {}, fallback = null) {
   const taskStatusMatch = pathname.match(/^\/tasks\/(\d+)\/status$/);
   const messageMatch = pathname.match(/^\/messages\/(\d+)$/);
   const messagePinMatch = pathname.match(/^\/messages\/(\d+)\/pin$/);
+
+  if (method === "POST" && pathname === "/login") {
+    const user = findLocalUser(body.username, body.password);
+
+    if (!user) {
+      throw new Error("Invalid username or password.");
+    }
+
+    return serializeLocalUser(user);
+  }
+
+  if (method === "POST" && pathname === "/reset") {
+    resetLocalDemoData();
+    return { status: "reset" };
+  }
+
+  if (method === "GET" && pathname === "/users") {
+    return mockUsers.map(serializeLocalUser);
+  }
 
   if (method === "GET" && pathname === "/teams") {
     return clone(localTeams);
@@ -766,6 +820,18 @@ async function request(path, options = {}, fallback = null) {
 }
 
 export const api = {
+  login: (credentials) =>
+    request("/login", {
+      method: "POST",
+      body: JSON.stringify(credentials)
+    }),
+
+  resetDemoData: () =>
+    request("/reset", {
+      method: "POST"
+    }),
+
+  getUsers: () => request("/users"),
   getTeams: () => request("/teams"),
   getTasks: () => request("/tasks"),
   getMessages: () => request("/messages"),
