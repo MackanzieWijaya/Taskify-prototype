@@ -1,10 +1,19 @@
 const configuredApiBase = import.meta.env.VITE_API_URL;
+const configuredDemoMode = import.meta.env.VITE_TASKIFY_DEMO_MODE;
+const disabledDemoModeValues = new Set(["false", "0", "off", "no"]);
+const useBrowserDemoData =
+  configuredDemoMode === undefined
+    ? import.meta.env.PROD
+    : !disabledDemoModeValues.has(String(configuredDemoMode).toLowerCase());
 const API_BASE =
-  configuredApiBase === undefined
-    ? import.meta.env.DEV
-      ? "http://localhost:5000/api"
-      : null
-    : configuredApiBase;
+  useBrowserDemoData
+    ? null
+    : configuredApiBase === undefined
+      ? import.meta.env.DEV
+        ? "http://localhost:5000/api"
+        : null
+      : configuredApiBase;
+const localDemoStorageKey = "taskify_demo_data_v1";
 
 const validStatuses = ["To Do", "In Progress", "Completed"];
 
@@ -172,10 +181,74 @@ const clone = (value) => {
   return JSON.parse(JSON.stringify(value));
 };
 
-let localTeams = clone(mockTeams);
-let localTasks = clone(mockTasks);
-let localMessages = clone(mockMessages);
-let localNotifications = clone(mockNotifications);
+function canUseSessionStorage() {
+  try {
+    return typeof window !== "undefined" && Boolean(window.sessionStorage);
+  } catch {
+    return false;
+  }
+}
+
+function createLocalSeedData() {
+  return {
+    teams: clone(mockTeams),
+    tasks: clone(mockTasks).map(normalizeLocalTaskRecord),
+    messages: clone(mockMessages),
+    notifications: clone(mockNotifications)
+  };
+}
+
+function readLocalDemoData() {
+  if (!useBrowserDemoData || !canUseSessionStorage()) return null;
+
+  try {
+    const savedData = window.sessionStorage.getItem(localDemoStorageKey);
+    if (!savedData) return null;
+
+    const parsedData = JSON.parse(savedData);
+    const hasValidShape =
+      Array.isArray(parsedData?.teams) &&
+      Array.isArray(parsedData?.tasks) &&
+      Array.isArray(parsedData?.messages) &&
+      Array.isArray(parsedData?.notifications);
+
+    if (!hasValidShape) return null;
+
+    return {
+      teams: clone(parsedData.teams),
+      tasks: clone(parsedData.tasks).map(normalizeLocalTaskRecord),
+      messages: clone(parsedData.messages),
+      notifications: clone(parsedData.notifications)
+    };
+  } catch {
+    return null;
+  }
+}
+
+const initialLocalData = readLocalDemoData() || createLocalSeedData();
+
+let localTeams = initialLocalData.teams;
+let localTasks = initialLocalData.tasks;
+let localMessages = initialLocalData.messages;
+let localNotifications = initialLocalData.notifications;
+
+function saveLocalDemoData() {
+  if (!useBrowserDemoData || !canUseSessionStorage()) return;
+
+  try {
+    window.sessionStorage.setItem(
+      localDemoStorageKey,
+      JSON.stringify({
+        teams: localTeams,
+        tasks: localTasks,
+        messages: localMessages,
+        notifications: localNotifications
+      })
+    );
+  } catch {
+    // The in-memory fallback still works if a browser blocks session storage.
+  }
+}
 
 function createLocalId(collection) {
   if (collection.length === 0) return 1;
@@ -252,6 +325,7 @@ function getLocalTaskElapsedMs(task, now = new Date()) {
 
 function pruneExpiredLocalCompletedTasks() {
   const cutoffTime = Date.now() - localCompletedTaskRetentionMs;
+  const previousTaskCount = localTasks.length;
 
   localTasks = localTasks.filter((task) => {
     if (task.status !== "Completed" || !task.completedAt) return true;
@@ -259,6 +333,10 @@ function pruneExpiredLocalCompletedTasks() {
     const completedTime = new Date(task.completedAt).getTime();
     return Number.isNaN(completedTime) || completedTime > cutoffTime;
   });
+
+  if (localTasks.length !== previousTaskCount) {
+    saveLocalDemoData();
+  }
 }
 
 function applyLocalTaskStatus(task, status, options = {}) {
@@ -391,6 +469,7 @@ function localRequest(path, options = {}, fallback = null) {
 
     localTeams = [team, ...localTeams];
     createLocalNotification(`${team.name} group was created`, "activity");
+    saveLocalDemoData();
     return clone(team);
   }
 
@@ -410,6 +489,7 @@ function localRequest(path, options = {}, fallback = null) {
     team.description = String(body.description || "").trim() || `Workspace for ${groupName}.`;
     team.avatarUrl = normalizeAvatarUrl(body.avatarUrl);
     createLocalNotification(`${team.name} group details were updated`, "activity");
+    saveLocalDemoData();
     return clone(team);
   }
 
@@ -454,6 +534,7 @@ function localRequest(path, options = {}, fallback = null) {
 
     localTasks = [task, ...localTasks];
     createLocalNotification(`${title} was added for ${assignedTo}`, "task");
+    saveLocalDemoData();
     return clone(task);
   }
 
@@ -471,6 +552,7 @@ function localRequest(path, options = {}, fallback = null) {
 
     applyLocalTaskStatus(task, status, body);
     createLocalNotification(`${task.title} was marked as ${status}`, "status");
+    saveLocalDemoData();
     return clone(task);
   }
 
@@ -504,6 +586,7 @@ function localRequest(path, options = {}, fallback = null) {
     }
 
     createLocalNotification(`${task.title} was updated`, "activity");
+    saveLocalDemoData();
     return clone(task);
   }
 
@@ -516,6 +599,7 @@ function localRequest(path, options = {}, fallback = null) {
 
     const [deletedTask] = localTasks.splice(taskIndex, 1);
     createLocalNotification(`${deletedTask.title} was deleted`, "activity");
+    saveLocalDemoData();
     return clone(deletedTask);
   }
 
@@ -552,6 +636,7 @@ function localRequest(path, options = {}, fallback = null) {
 
     Object.assign(message, extractLocalMessageMentions(content, teamId));
     localMessages = [...localMessages, message];
+    saveLocalDemoData();
     return serializeLocalMessage(message);
   }
 
@@ -574,6 +659,7 @@ function localRequest(path, options = {}, fallback = null) {
     message.content = content;
     message.editedAt = new Date().toISOString();
     Object.assign(message, extractLocalMessageMentions(content, message.teamId));
+    saveLocalDemoData();
     return serializeLocalMessage(message);
   }
 
@@ -589,6 +675,7 @@ function localRequest(path, options = {}, fallback = null) {
     }
 
     const [deletedMessage] = localMessages.splice(messageIndex, 1);
+    saveLocalDemoData();
     return serializeLocalMessage(deletedMessage);
   }
 
@@ -602,6 +689,7 @@ function localRequest(path, options = {}, fallback = null) {
     message.isPinned = true;
     message.pinnedAt = message.pinnedAt || new Date().toISOString();
     message.pinnedBy = String(body.pinnedBy || "").trim() || "Andy";
+    saveLocalDemoData();
     return serializeLocalMessage(message);
   }
 
@@ -615,6 +703,7 @@ function localRequest(path, options = {}, fallback = null) {
     message.isPinned = false;
     message.pinnedAt = null;
     message.pinnedBy = null;
+    saveLocalDemoData();
     return serializeLocalMessage(message);
   }
 
@@ -629,11 +718,12 @@ function localRequest(path, options = {}, fallback = null) {
       throw new Error("Notification text is required.");
     }
 
-    return clone(
-      createLocalNotification(text, body.type || "activity", {
-        recipient: body.recipient ? String(body.recipient).trim() : null
-      })
-    );
+    const notification = createLocalNotification(text, body.type || "activity", {
+      recipient: body.recipient ? String(body.recipient).trim() : null
+    });
+
+    saveLocalDemoData();
+    return clone(notification);
   }
 
   if (fallback !== null) {

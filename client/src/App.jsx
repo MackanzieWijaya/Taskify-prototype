@@ -99,6 +99,15 @@ export default function App() {
   }, [user]);
 
   useEffect(() => {
+    if (!user || teams.length === 0) return;
+
+    const selectedTeamExists = teams.some((team) => team.id === selectedTeamId);
+    if (!selectedTeamExists) {
+      setSelectedTeamId(teams[0].id);
+    }
+  }, [selectedTeamId, teams, user]);
+
+  useEffect(() => {
     if (user) {
       localStorage.setItem("taskify_team", String(selectedTeamId));
     }

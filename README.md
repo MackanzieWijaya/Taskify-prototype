@@ -47,6 +47,17 @@ The React app runs at the Vite URL shown in the terminal, usually `http://localh
 
 The frontend defaults to `http://localhost:5000/api` in development. If you run the backend on another port, create `client/.env` from `client/.env.example` and update `VITE_API_URL`.
 
+## Deployed Demo Mode
+
+Production builds default to browser-local demo data. This gives each visitor a private seeded prototype session in their own browser tab, so test users can create groups, messages, and tasks without changing anyone else's demo.
+
+If you want a deployed frontend to share the Express API instead, set this in the frontend environment:
+
+```bash
+VITE_TASKIFY_DEMO_MODE=false
+VITE_API_URL=https://your-api-url.example/api
+```
+
 ## Demo Login
 
 ```text
@@ -94,6 +105,7 @@ npm run preview  # preview the production build
 
 ## Prototype Notes
 
-- Data resets when the backend restarts.
+- Deployed demo data is private per browser session and resets for a new session.
+- Backend data resets when the backend restarts.
 - Completed tasks are pruned after the retention window used by the prototype.
 - `node_modules/`, Vite build output, logs, and local `.env` files are ignored by Git. Keep both `package-lock.json` files committed so installs are reproducible.
