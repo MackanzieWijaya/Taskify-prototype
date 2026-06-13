@@ -1,5 +1,6 @@
-import { Plus, UsersRound, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import GroupAvatar from "./GroupAvatar";
 
 const defaultColor = "#7c3aed";
 
@@ -66,9 +67,7 @@ export default function CreateGroupDialog({ user, onClose, onCreate }) {
           <X size={18} />
         </button>
 
-        <div className="create-group-icon">
-          <UsersRound size={24} />
-        </div>
+        <GroupAvatar name={form.name || "Group"} color={form.color} className="create-group-icon" />
 
         <div>
           <p className="eyebrow">New group</p>

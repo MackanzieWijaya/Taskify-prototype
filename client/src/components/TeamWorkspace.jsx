@@ -48,8 +48,7 @@ export default function TeamWorkspace({
       parsedTask ||
       parseTaskIntent(message.content, {
         members: selectedTeam.members,
-        fallbackAssignee: user.username,
-        baseDate: message.createdAt
+        fallbackAssignee: user.username
       });
 
     if (!taskIntent) return null;

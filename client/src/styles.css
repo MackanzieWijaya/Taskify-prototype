@@ -43,33 +43,48 @@ button {
 }
 
 .login-page {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.95fr);
   min-height: 100vh;
-  padding: 36px;
-  gap: 32px;
+  place-items: center;
+  overflow: hidden;
+  padding: 32px;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(192, 68, 244, 0.2), transparent 30%),
+    linear-gradient(180deg, rgba(235, 222, 255, 0.92) 0%, rgba(248, 245, 255, 0.96) 48%, #ffffff 100%),
+    repeating-linear-gradient(60deg, rgba(92, 53, 242, 0.07) 0 2px, transparent 2px 16px);
 }
 
-.login-visual {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  padding: 34px;
-  border-radius: 28px;
-  color: white;
+.login-page::before,
+.login-page::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.login-page::before {
+  inset: 0;
   background:
-    linear-gradient(rgba(37, 26, 70, 0.62), rgba(37, 26, 70, 0.78)),
-    url("https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1400&q=80")
-      center/cover;
-  box-shadow: var(--shadow);
+    repeating-linear-gradient(60deg, rgba(92, 53, 242, 0.06) 0 2px, transparent 2px 18px);
+  mask-image: linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%);
+}
+
+.login-page::after {
+  bottom: -54px;
+  left: 50%;
+  width: min(860px, 86vw);
+  height: 150px;
+  border-radius: 50% 50% 0 0;
+  background: rgba(255, 255, 255, 0.78);
+  filter: blur(1px);
+  transform: translateX(-50%);
 }
 
 .brand-lockup,
 .logo-button,
 .profile-mini,
 .logout-button,
+.settings-button,
 .nav-item,
 .sidebar-collapse-button,
 .sidebar-group,
@@ -93,113 +108,119 @@ button {
 }
 
 .brand-lockup {
-  gap: 14px;
-}
-
-.brand-lockup p,
-.brand-lockup span,
-.logo-button strong,
-.logo-button small {
-  margin: 0;
-}
-
-.brand-lockup p {
-  font-size: 1.45rem;
-  font-weight: 800;
+  display: grid;
+  width: min(224px, 100%);
+  align-items: start;
+  gap: 10px;
+  padding: 14px 16px 15px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 42px rgba(30, 27, 46, 0.2);
 }
 
 .brand-lockup span {
   display: block;
-  margin-top: 3px;
-  color: rgba(255, 255, 255, 0.78);
+  margin: 0;
+  color: #565065;
+  font-size: 0.92rem;
+  font-weight: 800;
 }
 
-.logo-mark {
-  display: inline-grid;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
-  place-items: center;
-  border-radius: 14px;
-  color: white;
-  background: var(--accent);
-  font-weight: 900;
-  box-shadow: 0 12px 24px rgba(124, 58, 237, 0.25);
+.login-card-brand {
+  width: auto;
+  justify-items: center;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-.preview-window {
-  width: min(540px, 100%);
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(18px);
+.logo-image {
+  display: block;
+  height: auto;
+  object-fit: contain;
 }
 
-.preview-toolbar {
-  display: flex;
-  gap: 7px;
-  margin-bottom: 18px;
+.login-logo-image {
+  width: 178px;
+  max-width: 100%;
 }
 
-.preview-toolbar span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.72);
+.sidebar-logo-image {
+  width: 84px;
+  max-width: 100%;
 }
 
-.preview-body {
-  display: grid;
-  gap: 14px;
+.logo-dark {
+  display: none;
 }
 
-.preview-chat,
-.preview-task,
-.preview-stats {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--ink);
+:root[data-mode="dark"] .logo-light {
+  display: none;
 }
 
-.preview-chat p,
-.preview-task p {
-  margin: 4px 0 0;
-  color: var(--muted);
-}
-
-.preview-chat svg {
-  color: var(--accent);
-}
-
-.preview-task svg {
-  color: var(--green);
-}
-
-.preview-stats {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.preview-stats strong {
-  font-size: 2rem;
-  color: var(--accent-dark);
+:root[data-mode="dark"] .logo-dark {
+  display: block;
 }
 
 .login-card {
-  align-self: center;
-  width: min(480px, 100%);
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(392px, 100%);
+  gap: 22px;
   justify-self: center;
-  padding: 40px;
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: var(--shadow);
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 24px 62px rgba(35, 31, 70, 0.14);
+  backdrop-filter: blur(16px);
+}
+
+.login-title-block {
+  text-align: center;
+}
+
+.login-title-block h1 {
+  font-size: 1.45rem;
+}
+
+.login-greeting {
+  display: inline-grid;
+  grid-template-columns: max-content 6ch max-content;
+  justify-content: center;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+.login-greeting-name-slot {
+  display: inline-grid;
+  overflow: visible;
+  text-align: left;
+}
+
+.login-greeting-name {
+  display: inline-block;
+  transform-origin: center bottom;
+  animation: loginNameWhoosh 500ms ease both;
+  will-change: opacity, transform;
+}
+
+@keyframes loginNameWhoosh {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  58% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .eyebrow {
@@ -244,8 +265,8 @@ h3 {
 
 .login-form {
   display: grid;
-  gap: 18px;
-  margin-top: 30px;
+  gap: 14px;
+  margin-top: 0;
 }
 
 label {
@@ -266,6 +287,30 @@ label {
   border-radius: 14px;
   background: #fbfaff;
   color: var(--muted);
+}
+
+.login-card label {
+  gap: 7px;
+  color: #4c5369;
+  font-size: 0.82rem;
+}
+
+.login-card .input-shell {
+  min-height: 44px;
+  border-color: #e5e8f2;
+  border-radius: 10px;
+  background: rgba(248, 250, 255, 0.9);
+}
+
+.login-card .primary-button {
+  min-height: 46px;
+  border-radius: 10px;
+  background: #151826;
+  box-shadow: 0 14px 28px rgba(21, 24, 38, 0.18);
+}
+
+.login-card .primary-button:hover {
+  background: #060812;
 }
 
 input,
@@ -342,6 +387,7 @@ textarea {
   display: grid;
   grid-template-columns: 268px 1fr;
   min-height: 100vh;
+  transition: grid-template-columns 180ms ease;
 }
 
 .sidebar {
@@ -351,23 +397,50 @@ textarea {
   height: 100vh;
   flex-direction: column;
   justify-content: space-between;
+  --sidebar-rail-size: 48px;
   padding: 24px;
   border-right: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.84);
   backdrop-filter: blur(18px);
+  overflow: hidden;
 }
 
 .sidebar-top {
   min-height: 0;
 }
 
+.sidebar-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .logo-button {
-  width: 100%;
+  width: auto;
+  min-width: 0;
   gap: 12px;
   padding: 0;
   border: 0;
   background: transparent;
   text-align: left;
+}
+
+.sidebar-menu-button {
+  display: grid;
+  width: var(--sidebar-rail-size);
+  height: var(--sidebar-rail-size);
+  flex: 0 0 var(--sidebar-rail-size);
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  color: var(--muted);
+  background: transparent;
+}
+
+.sidebar-menu-button:hover {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
 }
 
 .logo-button small {
@@ -384,9 +457,14 @@ textarea {
 }
 
 .nav-item,
-.logout-button {
+.logout-button,
+.settings-button {
+  display: grid;
+  grid-template-columns: var(--sidebar-rail-size) minmax(0, 1fr);
   width: 100%;
   gap: 10px;
+  align-items: center;
+  overflow: hidden;
   padding: 12px 13px;
   border: 0;
   border-radius: 14px;
@@ -394,6 +472,21 @@ textarea {
   color: var(--muted);
   font-weight: 800;
   text-align: left;
+}
+
+.nav-item > svg,
+.logout-button > svg,
+.settings-button > svg {
+  justify-self: center;
+}
+
+.nav-item span,
+.logout-button span,
+.settings-button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nav-item:hover,
@@ -469,11 +562,23 @@ textarea {
   display: grid;
   gap: 7px;
   max-height: calc(100vh - 430px);
+  overflow-x: hidden;
   overflow-y: auto;
   padding-right: 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-group-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .sidebar-group {
+  display: grid;
+  grid-template-columns: var(--sidebar-rail-size) minmax(0, 1fr);
+  align-items: center;
   width: 100%;
   min-width: 0;
   gap: 9px;
@@ -497,6 +602,7 @@ textarea {
   width: 30px;
   height: 30px;
   flex: 0 0 30px;
+  justify-self: center;
   place-items: center;
   border-radius: 10px;
   color: white;
@@ -504,10 +610,27 @@ textarea {
   font-weight: 900;
 }
 
+.group-avatar {
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  color: white;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.group-avatar-initial {
+  display: block;
+  line-height: 1;
+}
+
 .sidebar-group-mark img,
 .team-icon img,
 .chat-group-icon img,
-.edit-group-picture img {
+.edit-group-picture img,
+.create-group-icon img,
+.group-avatar img {
   width: 100%;
   height: 100%;
   border-radius: inherit;
@@ -583,6 +706,17 @@ textarea {
   margin-top: 3px;
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.settings-button {
+  min-height: 44px;
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+
+.settings-button:hover {
+  color: var(--accent-dark);
+  background: var(--panel-tint);
 }
 
 .logout-button {
@@ -850,6 +984,7 @@ textarea {
   place-items: center;
   border-radius: 14px;
   color: white;
+  font-size: 0.98rem;
 }
 
 .team-card p {
@@ -869,6 +1004,190 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.chat-directory-page {
+  padding-bottom: 24px;
+}
+
+.chat-directory-header {
+  align-items: center;
+}
+
+.chat-directory-summary {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 14px;
+  border: 1px solid #fedf89;
+  border-radius: 14px;
+  color: #b54708;
+  background: #fff7e6;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(35, 31, 70, 0.06);
+}
+
+.chat-directory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.chat-directory-card {
+  display: grid;
+  min-height: 252px;
+  gap: 15px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: white;
+  color: var(--ink);
+  text-align: left;
+  box-shadow: var(--shadow);
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.chat-directory-card:hover {
+  border-color: rgba(92, 53, 242, 0.34);
+  box-shadow: 0 18px 44px rgba(35, 31, 70, 0.11);
+  transform: translateY(-2px);
+}
+
+.chat-directory-card-top,
+.chat-directory-title-row,
+.chat-directory-meta,
+.chat-directory-meta span,
+.chat-directory-footer {
+  display: flex;
+  align-items: center;
+}
+
+.chat-directory-card-top,
+.chat-directory-title-row,
+.chat-directory-footer {
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.chat-directory-avatar {
+  display: grid;
+  overflow: hidden;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+  place-items: center;
+  border-radius: 14px;
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 14px 28px rgba(35, 31, 70, 0.13);
+}
+
+.chat-directory-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.chat-directory-open {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+
+.chat-directory-title-row {
+  min-width: 0;
+}
+
+.chat-directory-title-row strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 1.05rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unfinished-badge {
+  display: grid;
+  min-width: 34px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--muted);
+  background: #eef1f7;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.unfinished-badge.active {
+  color: #b54708;
+  background: #fff7e6;
+}
+
+.chat-directory-preview {
+  display: -webkit-box;
+  min-height: 48px;
+  overflow: hidden;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.chat-directory-preview b {
+  color: var(--ink);
+}
+
+.chat-directory-meta {
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.chat-directory-meta span {
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--muted);
+  background: #f5f7fb;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.chat-directory-meta span:last-child {
+  color: #b54708;
+  background: #fff7e6;
+}
+
+.chat-directory-footer {
+  padding-top: 2px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.member-stack.compact {
+  padding-top: 0;
+}
+
+.member-stack.compact .profile-avatar {
+  margin-left: -7px;
+  border-width: 2px;
+  box-shadow: 0 6px 14px rgba(35, 31, 70, 0.12);
+}
+
+.member-stack.compact .profile-avatar:first-child {
+  margin-left: 0;
 }
 
 .group-analysis-page {
@@ -1913,6 +2232,10 @@ textarea {
   .task-form-reveal {
     animation: none;
   }
+
+  .login-greeting-name {
+    animation: none;
+  }
 }
 
 .task-card {
@@ -2029,14 +2352,134 @@ textarea {
   box-shadow: 0 28px 70px rgba(46, 31, 84, 0.24);
 }
 
+.settings-dialog {
+  position: relative;
+  display: grid;
+  width: min(456px, 100%);
+  gap: 22px;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  color: var(--ink);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.settings-dialog h2,
+.settings-dialog h3 {
+  margin: 0;
+}
+
+.settings-dialog h2 {
+  font-size: 1.45rem;
+}
+
+.settings-section {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-section h3 {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.settings-segment {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel-soft);
+}
+
+.settings-segment button {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 900;
+}
+
+.settings-segment button:hover,
+.settings-segment button.active {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+
+.settings-segment button.active {
+  box-shadow: 0 10px 22px var(--accent-glow);
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.theme-option {
+  display: grid;
+  min-height: 74px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--ink);
+  background: var(--panel-soft);
+  text-align: left;
+}
+
+.theme-option:hover,
+.theme-option.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.theme-option strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-option svg {
+  color: var(--accent-dark);
+}
+
+.theme-swatch {
+  display: flex;
+  height: 22px;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.theme-swatch i {
+  flex: 1;
+}
+
 .create-group-icon {
   display: grid;
   width: 54px;
   height: 54px;
   place-items: center;
   border-radius: 16px;
-  color: var(--accent-dark);
+  color: white;
   background: var(--accent-soft);
+  font-size: 1.05rem;
 }
 
 .create-group-form {
@@ -2065,6 +2508,7 @@ textarea {
   place-items: center;
   border-radius: 18px;
   color: white;
+  font-size: 1.2rem;
   box-shadow: 0 14px 28px rgba(92, 53, 242, 0.18);
 }
 
@@ -2463,11 +2907,166 @@ textarea {
   --accent: #5c35f2;
   --accent-dark: #4220cf;
   --accent-soft: #f0ecff;
+  --accent-glow: rgba(92, 53, 242, 0.18);
+  --accent-contrast: #ffffff;
   --ink: #17182f;
   --muted: #68708a;
   --line: #e7e9f3;
+  --panel: #ffffff;
+  --panel-soft: #fbfbfe;
+  --panel-tint: #fbfaff;
+  --input-bg: #ffffff;
+  --message-in: #f0f1f6;
+  --message-out: #e3dcff;
+  --danger: #a33b20;
+  --danger-soft: #fff3ed;
+  --success: #15803d;
+  --success-soft: #ecfdf3;
+  --warning: #b54708;
+  --warning-soft: #fff7e6;
+  --info: #08756f;
+  --info-soft: #e9fbf8;
   --page: #f8f9fd;
+  --sidebar-bg-top: rgba(255, 255, 255, 0.96);
+  --sidebar-bg-bottom: rgba(250, 250, 255, 0.94);
+  --modal-backdrop: rgba(30, 27, 46, 0.38);
   --shadow: 0 16px 38px rgba(35, 31, 70, 0.08);
+}
+
+:root[data-theme="catppuccin"] {
+  --accent: #8c6cff;
+  --accent-dark: #5f4acb;
+  --accent-soft: #f0ebff;
+  --accent-glow: rgba(140, 108, 255, 0.18);
+  --ink: #1d1a2f;
+  --muted: #746b8b;
+  --line: #e8e1f4;
+  --panel-soft: #fff9fd;
+  --panel-tint: #f8f1ff;
+  --message-out: #eadfff;
+  --page: #faf7ff;
+  --sidebar-bg-top: rgba(255, 251, 255, 0.97);
+  --sidebar-bg-bottom: rgba(250, 246, 255, 0.94);
+}
+
+:root[data-theme="gruvbox"] {
+  --accent: #b36d2d;
+  --accent-dark: #7c4a1e;
+  --accent-soft: #fff0db;
+  --accent-glow: rgba(179, 109, 45, 0.18);
+  --ink: #282018;
+  --muted: #756858;
+  --line: #eadfce;
+  --panel-soft: #fffaf1;
+  --panel-tint: #fff4df;
+  --message-out: #ffe4bd;
+  --page: #fbf6ec;
+  --sidebar-bg-top: rgba(255, 250, 241, 0.97);
+  --sidebar-bg-bottom: rgba(251, 244, 232, 0.94);
+}
+
+:root[data-theme="dracula"] {
+  --accent: #7b61ff;
+  --accent-dark: #573ed7;
+  --accent-soft: #f0edff;
+  --accent-glow: rgba(123, 97, 255, 0.2);
+  --ink: #17182c;
+  --muted: #67708b;
+  --line: #e4e7f3;
+  --panel-soft: #fafaff;
+  --panel-tint: #f5f1ff;
+  --message-out: #e8dfff;
+  --page: #f7f8ff;
+  --sidebar-bg-top: rgba(255, 255, 255, 0.97);
+  --sidebar-bg-bottom: rgba(248, 248, 255, 0.94);
+}
+
+:root[data-mode="dark"] {
+  color-scheme: dark;
+  --accent: #a78bfa;
+  --accent-dark: #d9ccff;
+  --accent-soft: rgba(167, 139, 250, 0.11);
+  --accent-glow: rgba(167, 139, 250, 0.24);
+  --accent-contrast: #151022;
+  --ink: #f2f0fb;
+  --muted: #aaa5bd;
+  --line: #353148;
+  --panel: #201c2e;
+  --panel-soft: #191625;
+  --panel-tint: #272137;
+  --input-bg: #171421;
+  --message-in: #292537;
+  --message-out: #3a2f5d;
+  --danger: #ffb4a1;
+  --danger-soft: rgba(255, 135, 107, 0.14);
+  --success: #8bdc9d;
+  --success-soft: rgba(139, 220, 157, 0.14);
+  --warning: #f6c177;
+  --warning-soft: rgba(246, 193, 119, 0.14);
+  --info: #8bd5ca;
+  --info-soft: rgba(139, 213, 202, 0.14);
+  --page: #15131d;
+  --sidebar-bg-top: rgba(32, 28, 46, 0.98);
+  --sidebar-bg-bottom: rgba(25, 22, 37, 0.96);
+  --modal-backdrop: rgba(10, 8, 16, 0.58);
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-mode="dark"][data-theme="catppuccin"] {
+  --accent: #cba6f7;
+  --accent-dark: #eadcff;
+  --accent-soft: rgba(203, 166, 247, 0.12);
+  --accent-glow: rgba(203, 166, 247, 0.22);
+  --ink: #f5eefa;
+  --muted: #b8adc9;
+  --line: #40354f;
+  --panel: #211a2b;
+  --panel-soft: #191522;
+  --panel-tint: #2a2137;
+  --input-bg: #18131f;
+  --message-in: #2b2337;
+  --message-out: #3a2a52;
+  --page: #15111d;
+  --sidebar-bg-top: rgba(33, 26, 43, 0.98);
+  --sidebar-bg-bottom: rgba(25, 21, 34, 0.96);
+}
+
+:root[data-mode="dark"][data-theme="gruvbox"] {
+  --accent: #fabd2f;
+  --accent-dark: #ffe7a3;
+  --accent-soft: rgba(250, 189, 47, 0.12);
+  --accent-glow: rgba(250, 189, 47, 0.2);
+  --ink: #f7ead7;
+  --muted: #c1b29f;
+  --line: #4b3d2f;
+  --panel: #282018;
+  --panel-soft: #1f1a15;
+  --panel-tint: #33281d;
+  --input-bg: #1b1612;
+  --message-in: #33291f;
+  --message-out: #4a351b;
+  --page: #171310;
+  --sidebar-bg-top: rgba(40, 32, 24, 0.98);
+  --sidebar-bg-bottom: rgba(31, 26, 21, 0.96);
+}
+
+:root[data-mode="dark"][data-theme="dracula"] {
+  --accent: #bd93f9;
+  --accent-dark: #ead9ff;
+  --accent-soft: rgba(189, 147, 249, 0.12);
+  --accent-glow: rgba(189, 147, 249, 0.24);
+  --ink: #f8f8f2;
+  --muted: #b8b8c7;
+  --line: #44475a;
+  --panel: #282a36;
+  --panel-soft: #1f212b;
+  --panel-tint: #323442;
+  --input-bg: #1b1d26;
+  --message-in: #343746;
+  --message-out: #45345f;
+  --page: #191a23;
+  --sidebar-bg-top: rgba(40, 42, 54, 0.98);
+  --sidebar-bg-bottom: rgba(31, 33, 43, 0.96);
 }
 
 body {
@@ -2478,59 +3077,87 @@ body {
   grid-template-columns: 280px minmax(0, 1fr);
 }
 
+.app-shell.sidebar-compact-shell {
+  grid-template-columns: 88px minmax(0, 1fr);
+}
+
 .sidebar {
   padding: 28px 18px 24px 20px;
   border-right: 1px solid var(--line);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(250, 250, 255, 0.94)),
+    linear-gradient(180deg, var(--sidebar-bg-top), var(--sidebar-bg-bottom)),
     var(--page);
   box-shadow: none;
+  transition:
+    padding 180ms ease,
+    width 180ms ease;
 }
 
-.logo-mark {
-  width: 38px;
-  height: 38px;
-  flex-basis: 38px;
-  border-radius: 11px;
-  background: var(--accent);
-  box-shadow: 0 10px 22px rgba(92, 53, 242, 0.24);
-}
-
-.logo-button strong {
-  font-size: 1.18rem;
-}
-
-.sidebar-primary-action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sidebar-brand-row {
   gap: 10px;
-  width: 100%;
-  min-height: 52px;
-  margin-top: 28px;
-  border: 0;
-  border-radius: 10px;
-  color: white;
-  background: linear-gradient(135deg, #6d42ff, #4f2fe8);
-  font-weight: 900;
-  box-shadow: 0 16px 30px rgba(92, 53, 242, 0.24);
 }
 
-.sidebar-primary-action:hover {
-  background: linear-gradient(135deg, #5633e9, #4220cf);
+.logo-button {
+  justify-content: flex-start;
+  max-width: 96px;
+  min-height: 44px;
+  padding: 0 0 4px;
+  overflow: hidden;
+  transform-origin: left center;
+  transition:
+    max-width 180ms ease,
+    opacity 140ms ease,
+    transform 180ms ease;
 }
 
 .sidebar-nav {
   gap: 12px;
-  margin-top: 38px;
+  margin-top: 26px;
 }
 
 .nav-item,
-.logout-button {
+.logout-button,
+.settings-button {
+  transition:
+    width 180ms ease,
+    min-width 180ms ease,
+    grid-template-columns 180ms ease,
+    gap 180ms ease,
+    color 140ms ease,
+    background 140ms ease;
   min-height: 48px;
-  padding: 0 16px;
+  padding: 0;
   border-radius: 10px;
-  color: #4a5068;
+  color: var(--muted);
+}
+
+.nav-item span,
+.logout-button span,
+.settings-button span,
+.sidebar-collapse-button span,
+.sidebar-group strong,
+.profile-mini-details {
+  max-width: 180px;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    max-width 180ms ease,
+    opacity 140ms ease,
+    transform 180ms ease;
+}
+
+.sidebar-group,
+.settings-button,
+.sidebar-collapse-button,
+.sidebar-add-button {
+  transition:
+    width 180ms ease,
+    min-width 180ms ease,
+    grid-template-columns 180ms ease,
+    gap 180ms ease,
+    transform 180ms ease,
+    color 140ms ease,
+    background 140ms ease;
 }
 
 .nav-item:hover,
@@ -2543,6 +3170,9 @@ body {
   margin-top: 26px;
   padding-top: 18px;
   border-top: 0;
+  transition:
+    margin-top 180ms ease,
+    padding-top 180ms ease;
 }
 
 .sidebar-section-header {
@@ -2552,12 +3182,23 @@ body {
 .sidebar-group-list {
   gap: 8px;
   max-height: calc(100vh - 492px);
+  transform: translateY(0);
+  transition:
+    max-height 180ms ease,
+    transform 180ms ease;
 }
 
 .sidebar-group {
   min-height: 48px;
-  padding: 8px 12px;
+  padding: 0;
   border-radius: 10px;
+}
+
+.sidebar-group-mark {
+  transition:
+    width 180ms ease,
+    height 180ms ease,
+    border-radius 180ms ease;
 }
 
 .sidebar-group:hover,
@@ -2569,6 +3210,114 @@ body {
 
 .sidebar-bottom {
   gap: 12px;
+}
+
+.sidebar.compact {
+  align-items: center;
+  padding: 24px 20px;
+}
+
+.sidebar.compact .sidebar-top,
+.sidebar.compact .sidebar-bottom,
+.sidebar.compact .sidebar-nav,
+.sidebar.compact .sidebar-groups,
+.sidebar.compact .sidebar-group-list {
+  width: 100%;
+}
+
+.sidebar.compact .sidebar-brand-row {
+  width: 100%;
+  gap: 0;
+  justify-content: center;
+}
+
+.sidebar.compact .sidebar-menu-button {
+  justify-self: center;
+}
+
+.sidebar.compact .logo-button {
+  max-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-8px);
+}
+
+.sidebar.compact .sidebar-nav {
+  justify-items: center;
+  margin-top: 26px;
+}
+
+.sidebar.compact .nav-item,
+.sidebar.compact .logout-button,
+.sidebar.compact .settings-button,
+.sidebar.compact .sidebar-group,
+.sidebar.compact .sidebar-collapse-button,
+.sidebar.compact .sidebar-add-button {
+  grid-template-columns: var(--sidebar-rail-size) 0fr;
+  gap: 0;
+  justify-content: center;
+  width: var(--sidebar-rail-size);
+  min-width: var(--sidebar-rail-size);
+  padding: 0;
+}
+
+.sidebar.compact .nav-item span,
+.sidebar.compact .logout-button span,
+.sidebar.compact .settings-button span,
+.sidebar.compact .sidebar-collapse-button span,
+.sidebar.compact .sidebar-group strong,
+.sidebar.compact .collapse-chevron,
+.sidebar.compact .profile-mini-details {
+  max-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-6px);
+}
+
+.sidebar.compact .collapse-chevron {
+  flex-basis: 0;
+}
+
+.sidebar.compact .sidebar-groups {
+  justify-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 14px;
+}
+
+.sidebar.compact .sidebar-section-header {
+  height: 32px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.sidebar.compact .sidebar-group-list {
+  justify-items: center;
+  max-height: calc(100vh - 392px);
+  padding-right: 0;
+  transform: translateY(-6px);
+}
+
+.sidebar.compact .sidebar-group {
+  display: grid;
+  height: 48px;
+  place-items: center;
+}
+
+.sidebar.compact .sidebar-group-mark {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+  border-radius: 12px;
+}
+
+.sidebar.compact .profile-mini {
+  width: var(--sidebar-rail-size);
+  height: var(--sidebar-rail-size);
+  justify-content: center;
+  padding: 5px;
 }
 
 .profile-mini {
@@ -2650,6 +3399,8 @@ body {
   place-items: center;
   border-radius: 16px;
   color: white;
+  font-size: 1.45rem;
+  font-weight: 900;
   box-shadow: 0 14px 28px rgba(92, 53, 242, 0.22);
 }
 
@@ -3037,10 +3788,13 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  min-height: 58px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--line);
+  min-height: 48px;
+  margin: 12px 20px 24px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
   background: #fbfbfe;
+  box-shadow: 0 12px 26px rgba(35, 31, 70, 0.06);
 }
 
 .task-workspace-button {
@@ -3081,6 +3835,12 @@ body {
   min-height: 0;
   overflow: hidden;
   padding: 16px 18px 22px;
+}
+
+.task-list-workspace {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
 }
 
 .calendar-workspace,
@@ -3143,6 +3903,11 @@ body {
   background: #fbfbfe;
   font-size: 0.78rem;
   font-weight: 900;
+}
+
+.time-day-nav .time-day-nav-current {
+  min-width: 118px;
+  white-space: nowrap;
 }
 
 .mini-calendar-header button:hover,
@@ -3888,7 +4653,8 @@ body {
 }
 
 .notification-workspace-page .task-panel .panel-header,
-.notification-workspace-page .task-tabs {
+.notification-workspace-page .task-tabs,
+.notification-workspace-page .task-workspace-switch {
   background: #fbfbfe;
 }
 
@@ -3992,6 +4758,661 @@ body {
   background: #fff3ed;
 }
 
+body {
+  color: var(--ink);
+  background: var(--page);
+}
+
+.main-content,
+.workspace-main,
+.my-tasks-workspace-page,
+.notification-workspace-page,
+.task-panel .panel-header,
+.my-tasks-workspace-page .task-panel .panel-header,
+.notification-workspace-page .task-panel .panel-header {
+  background: var(--page);
+}
+
+.sidebar,
+.panel,
+.summary-card,
+.team-card,
+.chat-directory-card,
+.analysis-chart-panel,
+.analysis-member-panel,
+.analysis-task-panel,
+.analysis-member-card,
+.analysis-task-row,
+.chat-panel,
+.task-panel,
+.task-card,
+.list-task-card,
+.notification-item,
+.mini-calendar,
+.calendar-deadline-details,
+.local-clock-card,
+.day-timeline,
+.deadline-item,
+.task-form,
+.task-edit-dialog,
+.message-action-menu,
+.chat-options-menu,
+.task-view-menu,
+.task-title-menu,
+.task-page-menu,
+.mention-menu,
+.task-mention-menu,
+.pinned-message-tray,
+.profile-mini,
+.delete-dialog,
+.create-group-dialog,
+.settings-dialog {
+  border-color: var(--line);
+  color: var(--ink);
+  background: var(--panel);
+}
+
+.task-panel,
+.chat-directory-summary,
+.task-workspace-switch,
+.task-tabs,
+.my-task-status-tabs,
+.notification-tabs,
+.time-scroll-region,
+.calendar-workspace,
+.time-workspace,
+.task-panel-collapsed,
+.task-mention-item,
+.task-page-controls {
+  background: var(--panel-soft);
+}
+
+.sidebar {
+  background:
+    linear-gradient(180deg, var(--sidebar-bg-top), var(--sidebar-bg-bottom)),
+    var(--page);
+}
+
+.modal-backdrop {
+  background: var(--modal-backdrop);
+}
+
+.sidebar-group:hover,
+.sidebar-group.active,
+.nav-item:hover,
+.nav-item.active,
+.settings-button,
+.settings-segment button:hover,
+.settings-segment button.active,
+.theme-option:hover,
+.theme-option.active,
+.task-tab.active,
+.notification-task-toggle,
+.my-task-pane-toggle,
+.task-workspace-button.active,
+.task-view-button.active,
+.task-page-title-button,
+.task-page-filter-button,
+.compact-button:hover {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+
+.sidebar-add-button,
+.sidebar-menu-button:hover,
+.new-task-button,
+.primary-button,
+.task-add-button {
+  color: var(--accent-contrast);
+  background: var(--accent);
+}
+
+.sidebar-add-button:hover,
+.settings-button:hover,
+.ghost-button:hover,
+.secondary-button:hover,
+.theme-option:hover,
+.task-action-button:hover,
+.task-more-button:hover,
+.chat-header-icon-button:hover,
+.task-pane-toggle:hover,
+.composer-icon-button:hover,
+.task-mention-more-button:hover {
+  color: var(--accent-dark);
+  background: var(--panel-tint);
+}
+
+.logout-button,
+.danger-button,
+.delete-task-button,
+.task-mention-menu button:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.input-shell,
+.chat-form,
+.create-group-form input,
+.create-group-form textarea,
+.create-group-form select,
+.task-edit-form input,
+.task-edit-form textarea,
+.task-edit-form select,
+.task-form input,
+.task-form textarea,
+.task-form select,
+.task-page-menu,
+.task-title-menu,
+.task-view-menu,
+.mention-menu,
+.message-action-menu,
+.chat-options-menu,
+.task-mention-menu {
+  border-color: var(--line);
+  color: var(--ink);
+  background: var(--input-bg);
+}
+
+input,
+select,
+textarea {
+  color: var(--ink);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
+
+.message-date-divider span,
+.message-bubble,
+.reply-reference,
+.compose-context,
+.empty-pins {
+  color: var(--ink);
+  background: var(--message-in);
+}
+
+.message-bubble.mine {
+  background: var(--message-out);
+}
+
+.ghost-button.compact-button,
+.ghost-button,
+.secondary-button,
+.task-action-button,
+.task-mention-more-button,
+.task-view-button,
+.chat-header-icon-button,
+.task-pane-toggle,
+.composer-icon-button,
+.task-more-button,
+.modal-close-button {
+  border-color: var(--line);
+  color: var(--muted);
+  background: transparent;
+}
+
+.profile-mini,
+.chat-form,
+.task-card,
+.list-task-card,
+.notification-item,
+.pinned-message-tray,
+.task-edit-dialog,
+.message-action-menu,
+.chat-options-menu,
+.task-view-menu,
+.task-title-menu,
+.task-page-menu,
+.mention-menu,
+.task-mention-menu {
+  box-shadow: var(--shadow);
+}
+
+.chat-title-block span,
+.message-meta,
+.chat-directory-meta,
+.chat-directory-preview,
+.profile-mini-details span,
+.task-meta,
+.task-meta-item,
+.muted,
+.empty-state,
+.notification-item small,
+.deadline-warning-top span,
+.local-clock-card span {
+  color: var(--muted);
+}
+
+.status-pill.completed,
+.summary-completed,
+.task-complete-button.completed {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.status-pill.in-progress,
+.summary-progress {
+  color: var(--info);
+  background: var(--info-soft);
+}
+
+.status-pill.to-do,
+.summary-todo,
+.deadline-warning,
+.unfinished-badge {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.chat-group-icon,
+.team-icon,
+.summary-icon,
+.create-group-icon {
+  box-shadow: 0 14px 28px var(--accent-glow);
+}
+
+.sidebar.compact .profile-mini {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  place-items: center;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sidebar.compact .profile-mini-details {
+  display: none;
+}
+
+.sidebar.compact .profile-avatar {
+  margin: 0;
+  justify-self: center;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 8px 18px rgba(35, 31, 70, 0.12);
+}
+
+:root[data-mode="dark"] .sidebar.compact .profile-avatar {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+:root[data-mode="dark"] .message-row.highlighted .message-bubble {
+  border-color: rgba(167, 139, 250, 0.28);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.07);
+}
+
+:root[data-mode="dark"] .message-row.mentioned .message-bubble {
+  border-color: rgba(246, 193, 119, 0.28);
+  background: rgba(246, 193, 119, 0.08);
+  box-shadow: 0 0 0 3px rgba(246, 193, 119, 0.06);
+}
+
+:root[data-mode="dark"] .message-mention {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+
+:root[data-mode="dark"] .message-mention.for-current-user,
+:root[data-mode="dark"] .message-mentioned-badge {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+:root[data-mode="dark"] .summary-total .summary-icon,
+:root[data-mode="dark"] .notification-icon,
+:root[data-mode="dark"] .mention-all-icon,
+:root[data-mode="dark"] .chat-directory-open,
+:root[data-mode="dark"] .create-group-icon,
+:root[data-mode="dark"] .sidebar-add-button {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+  box-shadow: none;
+}
+
+:root[data-mode="dark"] .summary-todo .summary-icon,
+:root[data-mode="dark"] .notification-icon.deadline {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+:root[data-mode="dark"] .summary-progress .summary-icon,
+:root[data-mode="dark"] .notification-icon.status {
+  color: var(--info);
+  background: var(--info-soft);
+}
+
+:root[data-mode="dark"] .summary-completed .summary-icon,
+:root[data-mode="dark"] .notification-icon.completed {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+:root[data-mode="dark"] .notification-icon.task {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+:root[data-mode="dark"] .header-chip,
+:root[data-mode="dark"] .analysis-group-tabs button,
+:root[data-mode="dark"] .analysis-legend span,
+:root[data-mode="dark"] .chat-directory-meta span,
+:root[data-mode="dark"] .unfinished-badge {
+  border-color: var(--line);
+  color: var(--muted);
+  background: var(--panel-tint);
+  box-shadow: none;
+}
+
+:root[data-mode="dark"] .analysis-group-tabs button:hover,
+:root[data-mode="dark"] .analysis-group-tabs button.active,
+:root[data-mode="dark"] .chat-directory-open,
+:root[data-mode="dark"] .unfinished-badge.active {
+  border-color: rgba(167, 139, 250, 0.22);
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+
+:root[data-mode="dark"] .chat-directory-summary,
+:root[data-mode="dark"] .chat-directory-meta span:last-child {
+  border-color: rgba(246, 193, 119, 0.24);
+  color: var(--warning);
+  background: var(--warning-soft);
+  box-shadow: none;
+}
+
+:root[data-mode="dark"] .analysis-score-chip {
+  border-color: rgba(139, 220, 157, 0.24);
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+:root[data-mode="dark"] .analysis-chart {
+  border-color: var(--line);
+  background:
+    linear-gradient(180deg, var(--panel-tint), var(--panel-soft));
+}
+
+:root[data-mode="dark"] .analysis-chart line {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-mode="dark"] .analysis-chart text {
+  fill: var(--muted);
+}
+
+:root[data-mode="dark"] .analysis-member-row,
+:root[data-mode="dark"] .analysis-member-card,
+:root[data-mode="dark"] .analysis-task-row {
+  border-color: var(--line);
+  background: var(--panel-tint);
+}
+
+:root[data-mode="dark"] .analysis-status-stack,
+:root[data-mode="dark"] .analysis-task-row > span {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-mode="dark"] .analysis-task-row.running > span {
+  color: var(--info);
+  background: var(--info-soft);
+}
+
+:root[data-mode="dark"] .analysis-task-row.paused > span,
+:root[data-mode="dark"] .analysis-task-row.stopped > span {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+:root[data-mode="dark"] .analysis-task-row.completed > span {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+:root[data-mode="dark"] .task-view-toggle,
+:root[data-mode="dark"] .my-task-status-tabs,
+:root[data-mode="dark"] .my-task-section-heading,
+:root[data-mode="dark"] .task-page-filter-button,
+:root[data-mode="dark"] .task-workspace-switch,
+:root[data-mode="dark"] .task-tabs,
+:root[data-mode="dark"] .mini-calendar,
+:root[data-mode="dark"] .local-clock-card,
+:root[data-mode="dark"] .day-timeline,
+:root[data-mode="dark"] .deadline-warning,
+:root[data-mode="dark"] .all-day-deadline,
+:root[data-mode="dark"] .empty-state,
+:root[data-mode="dark"] .loading-banner {
+  border-color: var(--line);
+  color: var(--ink);
+  background: var(--panel-tint);
+  box-shadow: none;
+}
+
+:root[data-mode="dark"] .my-tasks-workspace-page .task-panel,
+:root[data-mode="dark"] .notification-workspace-page .task-panel,
+:root[data-mode="dark"] .my-tasks-workspace-page .task-panel .panel-header,
+:root[data-mode="dark"] .my-tasks-workspace-page .task-tabs,
+:root[data-mode="dark"] .my-tasks-workspace-page .task-workspace-switch,
+:root[data-mode="dark"] .notification-workspace-page .task-panel .panel-header,
+:root[data-mode="dark"] .notification-workspace-page .task-tabs,
+:root[data-mode="dark"] .notification-workspace-page .task-workspace-switch,
+:root[data-mode="dark"] .notification-workspace-page .task-list {
+  border-color: var(--line);
+  background: var(--panel-soft);
+}
+
+:root[data-mode="dark"] .task-panel,
+:root[data-mode="dark"] .task-panel-collapsed {
+  background: var(--panel-soft);
+}
+
+:root[data-mode="dark"] .task-panel-collapsed {
+  background:
+    linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), var(--line) calc(100% - 1px)),
+    var(--panel-soft);
+}
+
+:root[data-mode="dark"] .task-view-toggle button,
+:root[data-mode="dark"] .task-workspace-button,
+:root[data-mode="dark"] .task-tab,
+:root[data-mode="dark"] .notification-workspace-page .task-tab,
+:root[data-mode="dark"] .task-page-filter button,
+:root[data-mode="dark"] .notification-tabs button,
+:root[data-mode="dark"] .mini-calendar-header button,
+:root[data-mode="dark"] .time-day-nav button,
+:root[data-mode="dark"] .calendar-detail-heading button,
+:root[data-mode="dark"] .task-complete-button,
+:root[data-mode="dark"] .task-action-button {
+  border-color: var(--line);
+  color: var(--muted);
+  background: transparent;
+}
+
+:root[data-mode="dark"] .task-view-toggle button:hover,
+:root[data-mode="dark"] .task-view-toggle button.active,
+:root[data-mode="dark"] .task-workspace-button:hover,
+:root[data-mode="dark"] .task-workspace-button.active,
+:root[data-mode="dark"] .task-tab.active,
+:root[data-mode="dark"] .notification-workspace-page .task-tab.active,
+:root[data-mode="dark"] .task-page-filter button:hover,
+:root[data-mode="dark"] .task-page-filter button.active,
+:root[data-mode="dark"] .notification-tabs button:hover,
+:root[data-mode="dark"] .notification-tabs button.active,
+:root[data-mode="dark"] .mini-calendar-header button:hover,
+:root[data-mode="dark"] .time-day-nav button:hover {
+  border-color: rgba(167, 139, 250, 0.22);
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+
+:root[data-mode="dark"] .task-workspace-button.disabled,
+:root[data-mode="dark"] .task-workspace-button:disabled,
+:root[data-mode="dark"] .task-workspace-button.disabled:hover,
+:root[data-mode="dark"] .task-workspace-button:disabled:hover {
+  border-color: transparent;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+:root[data-mode="dark"] .task-card,
+:root[data-mode="dark"] .task-card.list-task-card {
+  border-color: var(--line);
+  color: var(--ink);
+  background: var(--panel-tint);
+  box-shadow: none;
+}
+
+:root[data-mode="dark"] .task-card.completed-task {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-mode="dark"] .task-card.completed-task h3,
+:root[data-mode="dark"] .task-card.completed-task .task-meta-item,
+:root[data-mode="dark"] .task-card.completed-task .task-timer-meta {
+  color: var(--muted);
+}
+
+:root[data-mode="dark"] .task-card.completed-task .status-pill.completed,
+:root[data-mode="dark"] .task-complete-button.completed {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+:root[data-mode="dark"] .my-task-section-heading strong,
+:root[data-mode="dark"] .unfinished-badge,
+:root[data-mode="dark"] .mini-calendar-day i {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-mode="dark"] .status-pill.to-do {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+:root[data-mode="dark"] .status-pill.in-progress {
+  color: var(--info);
+  background: var(--info-soft);
+}
+
+:root[data-mode="dark"] .status-pill.completed {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+:root[data-mode="dark"] .task-action-button.start {
+  border-color: rgba(139, 220, 157, 0.24);
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+:root[data-mode="dark"] .task-action-button.pause {
+  border-color: rgba(246, 193, 119, 0.24);
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+:root[data-mode="dark"] .task-action-button.stop,
+:root[data-mode="dark"] .delete-task-button,
+:root[data-mode="dark"] .task-mention-menu button:hover {
+  border-color: rgba(255, 180, 161, 0.24);
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+:root[data-mode="dark"] .task-add-button.added,
+:root[data-mode="dark"] .task-add-button.added:hover {
+  color: var(--success);
+  background: var(--success-soft);
+  box-shadow: none;
+}
+
+:root[data-mode="dark"] .task-more-button:hover,
+:root[data-mode="dark"] .calendar-detail-heading button:hover {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+
+:root[data-mode="dark"] .mini-calendar-day:hover {
+  border-color: rgba(167, 139, 250, 0.22);
+  background: var(--accent-soft);
+}
+
+:root[data-mode="dark"] .mini-calendar-day.muted-day {
+  color: rgba(242, 240, 251, 0.46);
+}
+
+:root[data-mode="dark"] .mini-calendar-day.today {
+  border-color: rgba(139, 213, 202, 0.32);
+  color: var(--info);
+}
+
+:root[data-mode="dark"] .mini-calendar-day.selected {
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+  background: var(--accent);
+}
+
+:root[data-mode="dark"] .deadline-warning {
+  background: var(--panel-tint);
+}
+
+:root[data-mode="dark"] .deadline-warning.critical,
+:root[data-mode="dark"] .deadline-warning.overdue {
+  border-color: rgba(255, 180, 161, 0.24);
+  background: var(--danger-soft);
+}
+
+:root[data-mode="dark"] .deadline-warning.urgent,
+:root[data-mode="dark"] .deadline-warning.soon,
+:root[data-mode="dark"] .deadline-warning.watch {
+  border-color: rgba(246, 193, 119, 0.22);
+  background: var(--warning-soft);
+}
+
+:root[data-mode="dark"] .deadline-warning-top span {
+  color: var(--warning);
+}
+
+:root[data-mode="dark"] .day-timeline,
+:root[data-mode="dark"] .timeline-hour div {
+  border-color: var(--line);
+}
+
+:root[data-mode="dark"] .timeline-hour div {
+  border-left-color: var(--line);
+  border-top-color: var(--line);
+}
+
+:root[data-mode="dark"] .timeline-deadline {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+  box-shadow: none;
+}
+
+:root[data-mode="dark"] .timeline-deadline span {
+  color: var(--accent-dark);
+}
+
+:root[data-mode="dark"] .timeline-active-progress {
+  color: var(--warning);
+  background: var(--warning-soft);
+  box-shadow: inset 0 0 0 1px rgba(246, 193, 119, 0.18);
+}
+
+:root[data-mode="dark"] .timeline-active-progress span {
+  color: var(--warning);
+}
+
+:root[data-mode="dark"] .all-day-deadline {
+  border-color: var(--line);
+}
+
 .task-card.new-task-pop {
   border-color: rgba(22, 163, 74, 0.34);
   animation: taskCardPop 640ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -4043,6 +5464,7 @@ body {
   .summary-grid,
   .team-grid,
   .team-grid.wide,
+  .chat-directory-grid,
   .my-task-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

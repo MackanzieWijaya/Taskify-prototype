@@ -4,9 +4,9 @@ import {
   CheckCircle2,
   Clock3,
   ClipboardList,
-  Loader2,
-  UsersRound
+  Loader2
 } from "lucide-react";
+import GroupAvatar from "./GroupAvatar";
 import NotificationList from "./NotificationList";
 import { formatDeadlineTime, parseDeadline } from "../deadlineUtils";
 
@@ -116,9 +116,7 @@ export default function Dashboard({ teams, tasks, notifications, onOpenTeam }) {
           {teams.map((team) => (
             <button className="team-card" key={team.id} type="button" onClick={() => onOpenTeam(team.id)}>
               <div className="team-card-top">
-                <div className="team-icon" style={{ backgroundColor: team.color }}>
-                  {team.avatarUrl ? <img src={team.avatarUrl} alt="" /> : <UsersRound size={20} />}
-                </div>
+                <GroupAvatar group={team} className="team-icon" />
                 <ArrowRight size={18} />
               </div>
               <strong>{team.name}</strong>

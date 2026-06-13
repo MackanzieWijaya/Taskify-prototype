@@ -1,10 +1,23 @@
-import { useState } from "react";
-import { CheckCircle2, LockKeyhole, MessageSquareText, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LockKeyhole, UserRound } from "lucide-react";
+import taskifyLogo from "../assets/taskify-logo.png";
+
+const prototypeNames = ["Andy", "Maya", "Rafi", "Sinta", "Dina", "Bima", "Laras"];
 
 export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState("Andy");
   const [password, setPassword] = useState("password123");
   const [error, setError] = useState("");
+  const [greetingNameIndex, setGreetingNameIndex] = useState(0);
+  const greetingName = prototypeNames[greetingNameIndex];
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setGreetingNameIndex((currentIndex) => (currentIndex + 1) % prototypeNames.length);
+    }, 1800);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -17,48 +30,21 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <main className="login-page">
-      <section className="login-visual" aria-label="Taskify preview">
-        <div className="brand-lockup">
-          <div className="logo-mark">T</div>
-          <div>
-            <p>Taskify</p>
-            <span>Chat, tasks, and group work in one place.</span>
-          </div>
-        </div>
-        <div className="preview-window">
-          <div className="preview-toolbar">
-            <span />
-            <span />
-            <span />
-          </div>
-          <div className="preview-body">
-            <div className="preview-chat">
-              <MessageSquareText size={18} />
-              <div>
-                <strong>Group Chat</strong>
-                <p>Andy, please finish the UI design by Friday.</p>
-              </div>
-            </div>
-            <div className="preview-task">
-              <CheckCircle2 size={18} />
-              <div>
-                <strong>Presentation Slides</strong>
-                <p>Completed by Sinta</p>
-              </div>
-            </div>
-            <div className="preview-stats">
-              <span>Total Tasks</span>
-              <strong>12</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="login-card" aria-labelledby="login-title">
-        <div>
-          <p className="eyebrow">Welcome back</p>
+        <div className="brand-lockup login-card-brand">
+          <img className="logo-image login-logo-image" src={taskifyLogo} alt="Taskify" />
+        </div>
+        <div className="login-title-block">
           <h1 id="login-title">Sign in to Taskify</h1>
-          <p className="muted">Use the demo account to open the productivity dashboard.</p>
+          <p className="muted login-greeting">
+            <span>Welcome to the prototype,&nbsp;</span>
+            <span className="login-greeting-name-slot">
+              <span key={greetingName} className="login-greeting-name">
+                {greetingName}
+              </span>
+            </span>
+            <span>.</span>
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
@@ -90,7 +76,7 @@ export default function LoginPage({ onLogin }) {
           {error && <p className="form-error">{error}</p>}
 
           <button type="submit" className="primary-button">
-            Login
+            Get Started
           </button>
         </form>
       </section>

@@ -19,6 +19,7 @@ import {
   X
 } from "lucide-react";
 import EditGroupDialog from "./EditGroupDialog";
+import GroupAvatar from "./GroupAvatar";
 import ProfileAvatar from "./ProfileAvatar";
 import TaskPaneToggle from "./TaskPaneToggle";
 import { formatDeadline } from "../deadlineUtils";
@@ -199,8 +200,7 @@ export default function ChatPanel({
         message.id,
         parseTaskIntent(message.content, {
           members,
-          fallbackAssignee: user.username,
-          baseDate: message.createdAt
+          fallbackAssignee: user.username
         })
       ])
     );
@@ -517,9 +517,7 @@ export default function ChatPanel({
     <section className="chat-panel">
       <div className="chat-header">
         <div className="chat-title-block">
-          <span className="chat-group-icon" style={{ backgroundColor: team?.color || "#7c3aed" }}>
-            {team?.avatarUrl ? <img src={team.avatarUrl} alt="" /> : <UsersRound size={22} />}
-          </span>
+          <GroupAvatar group={team} className="chat-group-icon" />
           <div>
             <h2>{team?.name || "Group Chat"}</h2>
             <span>{members.length} members</span>

@@ -86,8 +86,7 @@ export default function NotificationList({
         const team = teamById.get(message.teamId);
         const taskIntent = parseTaskIntent(message.content, {
           members: team?.members || [],
-          fallbackAssignee: user.username,
-          baseDate: message.createdAt
+          fallbackAssignee: user.username
         });
 
         return {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "./api";
+import ChatDirectory from "./components/ChatDirectory";
 import Dashboard from "./components/Dashboard";
 import GroupAnalysis from "./components/GroupAnalysis";
 import LoginPage from "./components/LoginPage";
@@ -7,8 +8,8 @@ import MyTasks from "./components/MyTasks";
 import NotificationList from "./components/NotificationList";
 import Sidebar from "./components/Sidebar";
 import TeamWorkspace from "./components/TeamWorkspace";
-import TeamsPage from "./components/TeamsPage";
 import CreateGroupDialog from "./components/CreateGroupDialog";
+import SettingsDialog from "./components/SettingsDialog";
 
 const demoUser = {
   username: "Andy",
@@ -16,7 +17,28 @@ const demoUser = {
 };
 
 const taskPaneStorageKey = "taskify_tasks_collapsed";
+const sidebarStorageKey = "taskify_sidebar_compact";
+const appearanceStorageKey = "taskify_appearance";
+const defaultAppearance = {
+  mode: "light",
+  theme: "taskify"
+};
 const mergeById = (item, update) => (item.id === update.id ? { ...item, ...update } : item);
+
+function readStoredAppearance() {
+  try {
+    const savedAppearance = JSON.parse(localStorage.getItem(appearanceStorageKey) || "null");
+
+    return {
+      mode: savedAppearance?.mode === "dark" ? "dark" : "light",
+      theme: ["taskify", "catppuccin", "gruvbox", "dracula"].includes(savedAppearance?.theme)
+        ? savedAppearance.theme
+        : defaultAppearance.theme
+    };
+  } catch {
+    return defaultAppearance;
+  }
+}
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -37,6 +59,11 @@ export default function App() {
   const [isTasksCollapsed, setIsTasksCollapsed] = useState(() => {
     return localStorage.getItem(taskPaneStorageKey) === "true";
   });
+  const [isSidebarCompact, setIsSidebarCompact] = useState(() => {
+    return localStorage.getItem(sidebarStorageKey) === "true";
+  });
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [appearance, setAppearance] = useState(readStoredAppearance);
 
   const selectedTeam = useMemo(() => {
     return teams.find((team) => team.id === selectedTeamId) || teams[0];
@@ -84,6 +111,18 @@ export default function App() {
   }, [isTasksCollapsed, user]);
 
   useEffect(() => {
+    if (user) {
+      localStorage.setItem(sidebarStorageKey, String(isSidebarCompact));
+    }
+  }, [isSidebarCompact, user]);
+
+  useEffect(() => {
+    document.documentElement.dataset.mode = appearance.mode;
+    document.documentElement.dataset.theme = appearance.theme;
+    localStorage.setItem(appearanceStorageKey, JSON.stringify(appearance));
+  }, [appearance]);
+
+  useEffect(() => {
     if (!user) return undefined;
 
     const intervalId = window.setInterval(() => {
@@ -125,6 +164,10 @@ export default function App() {
 
   const toggleTasksPanel = () => {
     setIsTasksCollapsed((isCollapsed) => !isCollapsed);
+  };
+
+  const toggleSidebarCompact = () => {
+    setIsSidebarCompact((isCompact) => !isCompact);
   };
 
   const handleCreateGroup = async (group) => {
@@ -284,23 +327,26 @@ export default function App() {
       : "main-content";
 
   return (
-    <div className="app-shell">
+    <div className={isSidebarCompact ? "app-shell sidebar-compact-shell" : "app-shell"}>
       <Sidebar
         activePage={activePage}
         groups={teams}
+        isCompact={isSidebarCompact}
         selectedGroupId={selectedTeamId}
         user={user}
         onLogout={handleLogout}
         onCreateGroup={() => setIsCreateGroupOpen(true)}
         onOpenGroup={openTeamWorkspace}
         onNavigate={setActivePage}
+        onToggleCompact={toggleSidebarCompact}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
       <main className={mainClassName}>
         {error && <div className="error-banner">{error}</div>}
         {isLoading && <div className="loading-banner">Loading Taskify workspace...</div>}
 
         {activePage === "dashboard" && <Dashboard {...pageProps} />}
-        {activePage === "teams" && <TeamsPage {...pageProps} />}
+        {activePage === "chat" && <ChatDirectory {...pageProps} />}
         {activePage === "analysis" && <GroupAnalysis {...pageProps} />}
         {activePage === "workspace" && <TeamWorkspace {...pageProps} />}
         {activePage === "my-tasks" && <MyTasks {...pageProps} />}
@@ -312,6 +358,14 @@ export default function App() {
           user={user}
           onClose={() => setIsCreateGroupOpen(false)}
           onCreate={handleCreateGroup}
+        />
+      )}
+
+      {isSettingsOpen && (
+        <SettingsDialog
+          appearance={appearance}
+          onChangeAppearance={setAppearance}
+          onClose={() => setIsSettingsOpen(false)}
         />
       )}
     </div>

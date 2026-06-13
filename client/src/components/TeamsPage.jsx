@@ -1,4 +1,5 @@
-import { ArrowRight, UsersRound } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import GroupAvatar from "./GroupAvatar";
 
 export default function TeamsPage({ teams, tasks, onOpenTeam }) {
   return (
@@ -19,9 +20,7 @@ export default function TeamsPage({ teams, tasks, onOpenTeam }) {
           return (
             <button className="team-card" key={team.id} type="button" onClick={() => onOpenTeam(team.id)}>
               <div className="team-card-top">
-                <div className="team-icon" style={{ backgroundColor: team.color }}>
-                  {team.avatarUrl ? <img src={team.avatarUrl} alt="" /> : <UsersRound size={20} />}
-                </div>
+                <GroupAvatar group={team} className="team-icon" />
                 <ArrowRight size={18} />
               </div>
               <strong>{team.name}</strong>

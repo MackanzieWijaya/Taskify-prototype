@@ -121,6 +121,14 @@ function formatDayHeading(dateValue) {
   }).format(dateValue);
 }
 
+function formatTimeNavDate(dateValue) {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(dateValue);
+}
+
 function formatHourLabel(hour) {
   return new Intl.DateTimeFormat("en", {
     hour: "numeric"
@@ -612,74 +620,76 @@ export default function TaskPanel({
         ))}
       </div>
 
-      {shouldShowForm && (
-        <div className={isFormClosing ? "task-form-reveal closing" : "task-form-reveal"}>
-          <form id="new-task-form" className="task-form" onSubmit={handleSubmit}>
-            <label>
-              Task title
-              <input
-                ref={titleInputRef}
-                value={form.title}
-                onChange={(event) => handleChange("title", event.target.value)}
-                placeholder="Add a task..."
-              />
-            </label>
-
-            <div className="form-row">
+      <div className="task-workspace-content task-list-workspace">
+        {shouldShowForm && (
+          <div className={isFormClosing ? "task-form-reveal closing" : "task-form-reveal"}>
+            <form id="new-task-form" className="task-form" onSubmit={handleSubmit}>
               <label>
-                Assign to
-                <select
-                  value={form.assignedTo}
-                  onChange={(event) => handleChange("assignedTo", event.target.value)}
-                >
-                  {team.members.map((member) => (
-                    <option value={member} key={member}>
-                      {member}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                Deadline date
+                Task title
                 <input
-                  type="date"
-                  value={form.deadlineDate}
-                  onChange={(event) => handleChange("deadlineDate", event.target.value)}
+                  ref={titleInputRef}
+                  value={form.title}
+                  onChange={(event) => handleChange("title", event.target.value)}
+                  placeholder="Add a task..."
                 />
               </label>
-            </div>
 
-            <label>
-              Time
-              <input
-                type="time"
-                value={form.deadlineTime}
-                onChange={(event) => handleChange("deadlineTime", event.target.value)}
-              />
-            </label>
+              <div className="form-row">
+                <label>
+                  Assign to
+                  <select
+                    value={form.assignedTo}
+                    onChange={(event) => handleChange("assignedTo", event.target.value)}
+                  >
+                    {team.members.map((member) => (
+                      <option value={member} key={member}>
+                        {member}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-            <button type="submit" className="primary-button small" disabled={isCreating}>
-              <PlusCircle size={17} />
-              {isCreating ? "Adding..." : "Add Task"}
-            </button>
-          </form>
+                <label>
+                  Deadline date
+                  <input
+                    type="date"
+                    value={form.deadlineDate}
+                    onChange={(event) => handleChange("deadlineDate", event.target.value)}
+                  />
+                </label>
+              </div>
+
+              <label>
+                Time
+                <input
+                  type="time"
+                  value={form.deadlineTime}
+                  onChange={(event) => handleChange("deadlineTime", event.target.value)}
+                />
+              </label>
+
+              <button type="submit" className="primary-button small" disabled={isCreating}>
+                <PlusCircle size={17} />
+                {isCreating ? "Adding..." : "Add Task"}
+              </button>
+            </form>
+          </div>
+        )}
+
+        <div className="task-list">
+          {visibleTasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              members={team.members}
+              onUpdateTask={onUpdateTask}
+              onUpdateTaskStatus={handleTaskStatusUpdate}
+              onDeleteTask={onDeleteTask}
+              isNew={task.id === animatedTaskId}
+            />
+          ))}
+          {visibleTasks.length === 0 && <div className="empty-state compact">No tasks in this lane.</div>}
         </div>
-      )}
-
-      <div className="task-list">
-        {visibleTasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            members={team.members}
-            onUpdateTask={onUpdateTask}
-            onUpdateTaskStatus={handleTaskStatusUpdate}
-            onDeleteTask={onDeleteTask}
-            isNew={task.id === animatedTaskId}
-          />
-        ))}
-        {visibleTasks.length === 0 && <div className="empty-state compact">No tasks in this lane.</div>}
       </div>
     </>
   );
@@ -784,6 +794,7 @@ export default function TaskPanel({
 
   const renderTimeWorkspace = () => {
     const isViewingToday = timeDateKey === todayKey;
+    const timeNavLabel = isViewingToday ? "Today" : formatTimeNavDate(timeDate);
     const slotUsage = new Map();
     const timelineTasks = timedTasks.map((task) => {
       const timeKey = getDeadlineTimeKey(task.deadline);
@@ -810,13 +821,17 @@ export default function TaskPanel({
           <button type="button" onClick={() => moveTimeDate(-1)} title="Previous day">
             <ChevronLeft size={17} />
           </button>
-          <button type="button" onClick={showTodayInTime} title="Today">
-            Today
+          <button
+            type="button"
+            className="time-day-nav-current"
+            onClick={showTodayInTime}
+            title={isViewingToday ? "Today" : "Go to today"}
+          >
+            {timeNavLabel}
           </button>
           <button type="button" onClick={() => moveTimeDate(1)} title="Next day">
             <ChevronRight size={17} />
           </button>
-          <strong>{formatFullDate(timeDate)}</strong>
         </div>
 
         <div className="time-scroll-region" ref={timeScrollRef}>
@@ -942,11 +957,11 @@ export default function TaskPanel({
         </div>
       </div>
 
-      {renderWorkspaceSwitch()}
-
       {activeWorkspace === "tasks" && renderTaskWorkspace()}
       {activeWorkspace === "calendar" && renderCalendarWorkspace()}
       {activeWorkspace === "time" && renderTimeWorkspace()}
+
+      {renderWorkspaceSwitch()}
     </aside>
   );
 }

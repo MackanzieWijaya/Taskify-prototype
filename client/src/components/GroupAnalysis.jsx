@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { formatDeadline } from "../deadlineUtils";
 import ProfileAvatar from "./ProfileAvatar";
+import GroupAvatar from "./GroupAvatar";
 
 const chartPalette = ["#7c3aed", "#0f9f8f", "#f97316", "#2563eb", "#dc2626", "#7c2d12"];
 const timelinePoints = 12;
@@ -299,9 +300,7 @@ export default function GroupAnalysis({ teams = [], tasks = [], selectedTeamId }
             role="tab"
             aria-selected={team.id === selectedGroup.id}
           >
-            <span className="analysis-group-mark" style={{ backgroundColor: team.color }}>
-              {team.avatarUrl ? <img src={team.avatarUrl} alt="" /> : team.name.slice(0, 1)}
-            </span>
+            <GroupAvatar group={team} className="analysis-group-mark" />
             {team.name}
           </button>
         ))}

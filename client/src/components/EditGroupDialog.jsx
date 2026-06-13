@@ -1,5 +1,6 @@
-import { ImagePlus, Save, UsersRound, X } from "lucide-react";
+import { ImagePlus, Save, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import GroupAvatar from "./GroupAvatar";
 
 const maxPictureSize = 2.5 * 1024 * 1024;
 
@@ -94,9 +95,12 @@ export default function EditGroupDialog({ team, onClose, onUpdate }) {
         </button>
 
         <div className="edit-group-top">
-          <div className="edit-group-picture" style={{ backgroundColor: team?.color || "#7c3aed" }}>
-            {form.avatarUrl ? <img src={form.avatarUrl} alt="" /> : <UsersRound size={24} />}
-          </div>
+          <GroupAvatar
+            group={team}
+            name={form.name}
+            avatarUrl={form.avatarUrl}
+            className="edit-group-picture"
+          />
           <div>
             <p className="eyebrow">Group settings</p>
             <h2 id="edit-group-title">Edit Group</h2>

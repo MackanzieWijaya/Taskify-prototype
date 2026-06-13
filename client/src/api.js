@@ -88,7 +88,7 @@ const mockMessages = [
     id: 1,
     teamId: 1,
     sender: "Maya",
-    content: "Andy, please finish the UI design by Friday.",
+    content: "@Andy, please finish the UI design by Friday.",
     createdAt: "2026-06-03T08:35:00.000Z",
     replyToId: null,
     editedAt: null,
